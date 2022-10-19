@@ -1,9 +1,9 @@
 #include "Sequential.h"
 #include <stdlib.h>
 
-Vol* Seq_Forward(Net* n, Vol* x, int is_training)
+Tensor* Seq_Forward(Net* n, Tensor* x, int is_training)
 {
-    Vol* y = x;
+    Tensor* y = x;
     //forward
     for (size_t i = 0; i < n->n_layers; i++)
     {
@@ -12,7 +12,7 @@ Vol* Seq_Forward(Net* n, Vol* x, int is_training)
     return y;
 }
 
-float Seq_Backward(Net* n, Vol* y)
+float Seq_Backward(Net* n, Tensor* y)
 {
     int N = n->n_layers;
     float loss = Backward_Layer(n->Layers[N - 1], y); // last layer assumed to be loss layer

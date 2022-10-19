@@ -5,11 +5,11 @@
 extern "C" {
 #endif 
 
-#include "Vol.h"
+#include "Tensor.h"
 #include "Interfaces.h"
 
 Layer *Input_Create(shape out_shape);
-Vol *Input_Forward(Layer* l, Vol* x, int is_train);
+Tensor *Input_Forward(Layer* l, Tensor* x, int is_train);
 #ifdef __cplusplus
 }
 #endif

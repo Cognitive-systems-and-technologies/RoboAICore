@@ -5,7 +5,7 @@
 extern "C" {
 #endif 
 
-#include "Vol.h"
+#include "Tensor.h"
 #include "Interfaces.h"
 
 typedef struct Softmax
@@ -14,8 +14,8 @@ typedef struct Softmax
 }Softmax;
 
 Layer *Softmax_Create(shape in_shape);
-Vol *Softmax_Forward(Layer* l, Vol* x, int is_train);
-float Softmax_Backward(Layer* l, Vol* y);
+Tensor *Softmax_Forward(Layer* l, Tensor* x, int is_train);
+float Softmax_Backward(Layer* l, Tensor* y);
 
 #ifdef __cplusplus
 }

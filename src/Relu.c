@@ -8,11 +8,11 @@ Layer* Relu_Create(shape out_shape)
 	dl->aData = NULL;
 	dl->n_inputs = out_shape.w * out_shape.h * out_shape.d;
 	dl->out_shape = out_shape;
-	dl->output = Vol_Create(dl->out_shape, 0, 0);
+	dl->output = Tensor_Create(dl->out_shape, 0, 0);
 	return dl;
 }
 
-Vol *Relu_Forward(Layer* l, Vol* x, int is_train)
+Tensor *Relu_Forward(Layer* l, Tensor* x, int is_train)
 {
 	l->input = x;
 	for (int i = 0; i < x->n; i++)
@@ -24,11 +24,11 @@ Vol *Relu_Forward(Layer* l, Vol* x, int is_train)
 	return l->output;
 }
 
-float Relu_Backward(Layer* l, Vol* y)
+float Relu_Backward(Layer* l, Tensor* y)
 {
 	float loss = 0.f;
 
-	Vol* x = l->input;
+	Tensor* x = l->input;
 	for (int i = 0; i < x->n; i++)
 	{
 		x->dw[i] = 0.f;

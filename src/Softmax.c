@@ -10,7 +10,7 @@ Layer* Softmax_Create(shape in_shape)
 	dl->type = LT_SOFTMAX;
 	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
 	dl->out_shape = (shape){ 1, 1, dl->n_inputs };
-	dl->output = Vol_Create(dl->out_shape, 0, 0);
+	dl->output = Tensor_Create(dl->out_shape, 0, 0);
 
 	l->es = (float*)malloc(dl->out_shape.d*sizeof(float));
 	for (int i = 0; i < dl->out_shape.d; i++)
@@ -21,7 +21,7 @@ Layer* Softmax_Create(shape in_shape)
 	return dl;
 }
 
-Vol *Softmax_Forward(Layer* l, Vol* x, int is_train)
+Tensor *Softmax_Forward(Layer* l, Tensor* x, int is_train)
 {
 	l->input = x; //save pointer to previous layer output
 	Softmax* data = (Softmax*)l->aData;
@@ -51,11 +51,11 @@ Vol *Softmax_Forward(Layer* l, Vol* x, int is_train)
 }
 
 
-float Softmax_Backward(Layer* l, Vol* y)
+float Softmax_Backward(Layer* l, Tensor* y)
 {
 	Softmax* data = l->aData;
 	float loss = 0.f;
-	Vol* x = l->input;
+	Tensor* x = l->input;
 	for (int i = 0; i < x->n; i++)
 	{
 		x->dw[i] = 0.f;

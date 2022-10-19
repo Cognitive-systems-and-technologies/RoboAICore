@@ -1,14 +1,14 @@
 #include "Net.h"
 #include <stdlib.h>
 
-void Net_Init(Net* net, Vol* (*forward)(Net* n, Vol* x, int is_training), float (*backward) (Net* n, Vol* y), void (*init) (shape in))
+void Net_Init(Net* net, Tensor* (*forward)(Net* n, Tensor* x, int is_training), float (*backward) (Net* n, Tensor* y), void (*init) (shape in))
 {
 	net->NetInit = init;
 	net->NetForward = forward;
 	net->NetBackward = backward;
 }
 
-float Backward_Layer(Layer* l, Vol* y) 
+float Backward_Layer(Layer* l, Tensor* y) 
 {
 	float loss = 0.f;
 	switch (l->type)
@@ -22,9 +22,9 @@ float Backward_Layer(Layer* l, Vol* y)
 	return loss;
 }
 
-Vol *Forward_Layer(Layer* l, Vol* x)
+Tensor *Forward_Layer(Layer* l, Tensor* x)
 {
-	Vol* y = NULL;
+	Tensor* y = NULL;
 	switch (l->type)
 	{
 	case LT_INPUT: y = Input_Forward(l, x, 0); break;

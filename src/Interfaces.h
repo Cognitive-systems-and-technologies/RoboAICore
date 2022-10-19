@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-#include "Vol.h"
+#include "Tensor.h"
 typedef enum LayerType {
 	LT_INPUT,
 	LT_DENSE,
@@ -23,8 +23,8 @@ typedef struct Layer
 	int n_inputs;
 	LayerType type;
 
-	Vol* input;
-	Vol *output;
+	Tensor* input;
+	Tensor *output;
 
 	void* aData;//additional layer data
 }Layer;

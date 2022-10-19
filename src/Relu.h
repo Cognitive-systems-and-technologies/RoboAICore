@@ -5,12 +5,12 @@
 extern "C" {
 #endif 
 
-#include "Vol.h"
+#include "Tensor.h"
 #include "Interfaces.h"
 
 Layer *Relu_Create(shape out_shape);
-Vol *Relu_Forward(Layer* l, Vol* x, int is_train);
-float Relu_Backward(Layer* l, Vol* y);
+Tensor *Relu_Forward(Layer* l, Tensor* x, int is_train);
+float Relu_Backward(Layer* l, Tensor* y);
 #ifdef __cplusplus
 }
 #endif

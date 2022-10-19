@@ -5,7 +5,7 @@
 extern "C" {
 #endif 
 
-#include "Vol.h"
+#include "Tensor.h"
 #include "Interfaces.h"
 #include "Dense.h"
 #include "Softmax.h"
@@ -17,14 +17,14 @@ typedef struct _Net
 	Layer** Layers;
 	int n_layers;
 
-	Vol* (*NetForward) (struct _Net* n, Vol* x, int is_training);
-	float (*NetBackward) (struct _Net* n, Vol *y);
+	Tensor* (*NetForward) (struct _Net* n, Tensor* x, int is_training);
+	float (*NetBackward) (struct _Net* n, Tensor *y);
 	void (*NetInit) (shape in);
 }Net;
 
-void Net_Init(Net* net, Vol*(*forward)(Net* n, Vol* x, int is_training), float (*backward) (Net *n, Vol *y), void (*init) (shape in));
-float Backward_Layer (Layer* l, Vol *y);
-Vol *Forward_Layer(Layer* l, Vol* y);
+void Net_Init(Net* net, Tensor*(*forward)(Net* n, Tensor* x, int is_training), float (*backward) (Net *n, Tensor *y), void (*init) (shape in));
+float Backward_Layer (Layer* l, Tensor *y);
+Tensor *Forward_Layer(Layer* l, Tensor* y);
 #ifdef __cplusplus
 }
 #endif

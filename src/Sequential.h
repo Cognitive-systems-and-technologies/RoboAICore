@@ -7,8 +7,8 @@ extern "C" {
 
 #include "Net.h"
 
-Vol* Seq_Forward(Net* n, Vol* x, int is_training);
-float Seq_Backward(Net* n, Vol* y);
+Tensor* Seq_Forward(Net* n, Tensor* x, int is_training);
+float Seq_Backward(Net* n, Tensor* y);
 #ifdef __cplusplus
 }
 #endif

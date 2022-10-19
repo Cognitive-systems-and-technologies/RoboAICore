@@ -19,38 +19,38 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 	float bias = 0.0f;
 
 	l->n_filters = dl->out_shape.d;
-	l->filters = (Vol*)malloc(dl->out_shape.d*sizeof(Vol));
+	l->filters = (Tensor*)malloc(dl->out_shape.d*sizeof(Tensor));
 
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
 		float r = (float)rand() / (float)(RAND_MAX / 1.f);
-		Vol_Init(&l->filters[i], (shape) { 1, 1, dl->n_inputs }, r, 1);
+		Tensor_Init(&l->filters[i], (shape) { 1, 1, dl->n_inputs }, r, 1);
 	}
-	l->biases = Vol_Create((shape) { 1, 1, dl->out_shape.d }, bias, 1);
+	l->biases = Tensor_Create((shape) { 1, 1, dl->out_shape.d }, bias, 1);
 	
 	dl->aData = l;
 	return dl;
 }
 
-Vol *Dense_Forward(Layer* l, Vol* x, int is_train) 
+Tensor *Dense_Forward(Layer* l, Tensor* x, int is_train) 
 {
 	Dense* data = (Dense*)l->aData;
 	l->input = x; //save pointer to previous layer output
 	for (int i = 0; i < l->out_shape.d; i++) //foreach output neuron
 	{
-		float a = Vol_WeightedSum(x, &data->filters[i]);
+		float a = Tensor_WeightedSum(x, &data->filters[i]);
 		a += data->biases->w[i];//add bias
 		l->output->w[i] = a;
 	}
 	return l->output;
 }
 
-float Dense_Backward(Layer* l, Vol* y)
+float Dense_Backward(Layer* l, Tensor* y)
 {
 	Dense* data = l->aData;
 	float loss = 0.f;
 
-	Vol* x = l->input;
+	Tensor* x = l->input;
 	for (int i = 0; i < x->n; i++)
 	{
 		x->dw[i] = 0.f;
@@ -58,7 +58,7 @@ float Dense_Backward(Layer* l, Vol* y)
 	//---------------------------------------
 	for (int i = 0; i < l->out_shape.d; i++)
 	{
-		Vol tfi = data->filters[i];
+		Tensor tfi = data->filters[i];
 		float chain_grad = l->output->dw[i];
 		for (int d = 0; d < l->n_inputs; d++)
 		{
@@ -72,8 +72,8 @@ float Dense_Backward(Layer* l, Vol* y)
 
 void Dense_Free(Dense* l) 
 {
-	//Vol_Free(l->output);
-	Vol_Free(l->biases);
-	Vol_Free(l->filters);
+	//Tensor_Free(l->output);
+	Tensor_Free(l->biases);
+	Tensor_Free(l->filters);
 	free(l);
 }
