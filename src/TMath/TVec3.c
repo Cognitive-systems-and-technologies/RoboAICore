@@ -32,6 +32,11 @@ TVec3 TVec3_Sub(TVec3 v1, TVec3 v2)
 	return (TVec3) { v1.x - v2.x, v1.y - v2.y, v1.z - v2.z };
 }
 
+TVec3 TVec3_Add(TVec3 v1, TVec3 v2)
+{
+	return (TVec3) { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
+}
+
 TVec3 TVec3_Norm(TVec3 v) 
 {
 	return TVec3_Div(v, TVec3_Length(v));
