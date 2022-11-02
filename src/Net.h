@@ -11,6 +11,7 @@ extern "C" {
 #include "Softmax.h"
 #include "Input.h"
 #include "Relu.h"
+#include "Regression.h"
 
 typedef struct _Net
 {

@@ -16,6 +16,7 @@ float Backward_Layer(Layer* l, Tensor* y)
 	case LT_DENSE: loss = Dense_Backward(l, y); break;
 	case LT_SOFTMAX: loss = Softmax_Backward(l, y); break;
 	case LT_RELU: loss = Relu_Backward(l, y); break;
+	case LT_REGRESSION: loss = Regression_Backward(l, y); break;
 	default:
 		break;
 	}
@@ -31,6 +32,7 @@ Tensor *Forward_Layer(Layer* l, Tensor* x)
 	case LT_DENSE: y = Dense_Forward(l, x, 0); break;
 	case LT_SOFTMAX: y = Softmax_Forward(l, x, 0); break;
 	case LT_RELU: y = Relu_Forward(l, x, 0); break;
+	case LT_REGRESSION: y = Regression_Forward(l, x, 0); break;
 	default: break;
 	}
 	return y;
