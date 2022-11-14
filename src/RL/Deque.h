@@ -1,30 +1,34 @@
-#ifndef DEQUE_H
-#define DEQUE_H
+#ifndef SIMPLEDEQUE_H
+#define SIMPLEDEQUE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-typedef struct
-{
-	int capacity;
-	volatile int length;
-	unsigned int elem_size;
-	void** data;
-	void (*elemFree) (void *e);
-}Deque;
+	typedef struct DequeElem
+	{
+		void* elem;
+	}DequeElem;
 
-Deque* createDeque(int max_length, unsigned int size, void (*elementFree) (void* e));
+	typedef struct SimpleDeque
+	{
+		int capacity;
+		int length;
+		DequeElem* data;
+	}SimpleDeque;
 
-void dequeAppend(Deque* d, void* t);
+	SimpleDeque* createDeque(int capacity);
 
-void freeDeque(Deque* d);
+	void dequeAppend(SimpleDeque* d, DequeElem t, void (*elementFree) (void* e));
+
+	void freeDeque(SimpleDeque* d, void (*elementFree) (void* e));
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !DEQUE_H
-
+#endif // !SIMPLEDEQUE_H

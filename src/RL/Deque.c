@@ -1,25 +1,34 @@
-#include "Deque.h"
+#include "SimpleDeque.h"
 
-Deque* createDeque(int max_length, unsigned int size, void (*elementFree) (void* e))
+SimpleDeque* createDeque(int capacity)
 {
-	Deque* d = (Deque*)malloc(sizeof(Deque));
-	d->elem_size = size;
-	d->capacity = max_length;
+	SimpleDeque* d = (SimpleDeque*)malloc(sizeof(SimpleDeque));
+	if (!d)
+	{
+		printf("Deque allocation error!");
+		return NULL;
+	}
+	d->capacity = capacity;
 	d->length = 0;
-	d->elemFree = elementFree;
-	d->data = (void**)malloc(size * max_length);
+	d->data = (DequeElem*)malloc(sizeof(DequeElem) * capacity);
+	if (!d->data)
+	{
+		printf("Deque data allocation error!");
+		free(d);
+		return NULL;
+	}
 	return d;
 }
 
-void dequeAppend(Deque* d, void* t)
+void dequeAppend(SimpleDeque* d, DequeElem t, void (*elementFree) (void* e))
 {
 	int id = d->length + 1;
 	if (id > d->capacity)
 	{
 		//delete first
-		d->elemFree(d->data[0]);
+		elementFree(d->data[0].elem);
 		//move array
-		memmove(&d->data[0], &d->data[1], d->elem_size * d->capacity - 1);
+		memmove(&d->data[0], &d->data[1], sizeof(DequeElem) * d->capacity - 1);
 		//set last
 		d->data[d->length - 1] = t;
 	}
@@ -30,11 +39,11 @@ void dequeAppend(Deque* d, void* t)
 	}
 }
 
-void freeDeque(Deque* d)
+void freeDeque(SimpleDeque* d, void (*elementFree) (void* e))
 {
 	for (size_t i = 0; i < d->capacity; i++)
 	{
-		d->elemFree(d->data[i]);
+		elementFree(d->data[i].elem);
 	}
 	free(d);
 }
