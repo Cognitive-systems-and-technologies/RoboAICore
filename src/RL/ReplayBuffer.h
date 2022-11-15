@@ -5,26 +5,41 @@
 extern "C" {
 #endif 
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "Tensor.h"
 #include "Interfaces.h"
+#include "SimpleDeque.h"
+
 typedef struct
 {
-	Tensor state;
-	float action;
+	Tensor* state;
+	Tensor* next_state;
+	int action;
 	float reward;
-	Tensor next_state;
 }Sample;
+
 typedef struct 
 {
-	int counter;
 	int capacity;
 	int batch_size;
-	Sample* buffer;
+	SimpleDeque* buffer;
 }ReplayBuffer;
 
 ReplayBuffer *ReplayBuffer_Create(int capacity, int batch_size);
-void ReplayBuffer_Record(ReplayBuffer* rb, Sample *s);
+void ReplayBuffer_Record(ReplayBuffer* rBuffer, Tensor* state,
+	Tensor* next_state,
+	int action,
+	float reward);
 Sample ReplayBuffer_Sample(ReplayBuffer* rb);
+void ReplayBuffer_Free(ReplayBuffer *rBuffer);
+
+Sample* createSample(Tensor* state,
+	Tensor* next_state,
+	int action,
+	float reward);
+void freeSample(void* sample);
 
 #ifdef __cplusplus
 }
