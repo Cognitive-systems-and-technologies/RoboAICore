@@ -7,6 +7,7 @@ extern "C" {
 
 #include "Tensor.h"
 #include "Interfaces.h"
+#include "TCommon.h"
 
 typedef struct Dense
 {

@@ -3,7 +3,12 @@
 
 Layer* Relu_Create(shape out_shape)
 {
-	Layer* dl = (Layer*)malloc(sizeof(Layer));
+	Layer* dl = malloc(sizeof(Layer));
+	if (!dl)
+	{
+		printf("Relu allocation error!");
+		return NULL;
+	}
 	dl->type = LT_RELU;
 	dl->aData = NULL;
 	dl->n_inputs = out_shape.w * out_shape.h * out_shape.d;

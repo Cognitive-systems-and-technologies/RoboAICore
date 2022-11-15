@@ -3,14 +3,24 @@
 
 Layer* Dense_Create(int num_neurons, shape in_shape) 
 {
-	Layer* dl = (Layer*)malloc(sizeof(Layer));
-	Dense* l = (Dense*)malloc(sizeof(Dense));
-
+	Layer* dl = malloc(sizeof(Layer));
+	if (!dl)
+	{
+		printf("Dense allocation error!");
+		return NULL;
+	}
+	Dense* l = malloc(sizeof(Dense));
+	if (!l)
+	{
+		printf("Dense data allocation error!");
+		free(dl);
+		return NULL;
+	}
 	dl->type = LT_DENSE;
 	//common layer def
 	dl->out_shape = (shape){ 1, 1, num_neurons };
 	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
-	dl->output = Vol_Create(dl->out_shape, 0, 0);
+	dl->output = Tensor_Create(dl->out_shape, 0, 0);
 
 	// optional
 	l->l1_decay_mul = 0.0f;
@@ -19,11 +29,17 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 	float bias = 0.0f;
 
 	l->n_filters = dl->out_shape.d;
-	l->filters = (Tensor*)malloc(dl->out_shape.d*sizeof(Tensor));
-
+	l->filters = malloc(dl->out_shape.d*sizeof(Tensor));
+	if (!l->filters)
+	{
+		printf("Dense filters allocation error!");
+		free(l);
+		free(dl);
+		return NULL;
+	}
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
-		float r = (float)rand() / (float)(RAND_MAX / 1.f);
+		float r = rngFloat();// (float)rand() / (float)(RAND_MAX / 1.f);
 		Tensor_Init(&l->filters[i], (shape) { 1, 1, dl->n_inputs }, r, 1);
 	}
 	l->biases = Tensor_Create((shape) { 1, 1, dl->out_shape.d }, bias, 1);

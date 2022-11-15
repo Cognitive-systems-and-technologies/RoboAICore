@@ -4,15 +4,32 @@
 
 Layer* Softmax_Create(shape in_shape)
 {
-	Layer* dl = (Layer*)malloc(sizeof(Layer));
-	Softmax* l = (Softmax*)malloc(sizeof(Softmax));
-
+	Layer* dl = malloc(sizeof(Layer));
+	Softmax* l = malloc(sizeof(Softmax));
+	if (!dl)
+	{
+		printf("Softmax allocation error!");
+		return NULL;
+	}
+	if (!l)
+	{
+		printf("Softmax data allocation error!");
+		free(dl);
+		return NULL;
+	}
 	dl->type = LT_SOFTMAX;
 	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
 	dl->out_shape = (shape){ 1, 1, dl->n_inputs };
 	dl->output = Tensor_Create(dl->out_shape, 0, 0);
 
-	l->es = (float*)malloc(dl->out_shape.d*sizeof(float));
+	l->es = malloc(dl->out_shape.d*sizeof(float));
+	if (!l->es)
+	{
+		printf("Softmax es allocation error!");
+		free(l);
+		free(dl);
+		return NULL;
+	}
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
 		l->es[i] = 0.f;

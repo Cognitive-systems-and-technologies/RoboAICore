@@ -10,9 +10,13 @@ Tensor *Tensor_Create(shape s, float c, int isTrain)
 	#ifdef __NVCC__
 		if (cudaMallocManaged((void**)&v, sizeof(Tensor)) != cudaSuccess) printf("Tensor allocation error\n");
 	#else
-		v = (Tensor*)malloc(sizeof(Tensor));
+		v = malloc(sizeof(Tensor));
 	#endif
-	
+	if (!v)
+	{
+		printf("Tensor allocation error!");
+		return NULL;
+	}
 	v->s.w = s.w;
 	v->s.h = s.h;
 	v->s.d = s.d;
@@ -25,13 +29,28 @@ Tensor *Tensor_Create(shape s, float c, int isTrain)
 		if (isTrain)
 			if (cudaMallocManaged((void**)&v->gsum, v->n * sizeof(float)) != cudaSuccess) printf("Tensor data allocation error\n");
 	#else
-		v->w = (float*)malloc(v->n * sizeof(float));
-		v->dw = (float*)malloc(v->n * sizeof(float));
+		v->w = malloc(v->n * sizeof(float));
+		v->dw = malloc(v->n * sizeof(float));
 		if (isTrain)
-			v->gsum = (float*)malloc(v->n * sizeof(float));
+			v->gsum = malloc(v->n * sizeof(float));
 	#endif
+	if (!v->w)
+	{
+		printf("w allocation error!");
+		return NULL;
+	}
+	if (!v->dw)
+	{
+		printf("dw allocation error!");
+		return NULL;
+	}
+	if (isTrain && !v->gsum)
+	{
+		printf("gsum allocation error!");
+		return NULL;
+	}
 
-	for (size_t i = 0; i < v->n; i++) {
+	for (int i = 0; i < v->n; i++) {
 		//float x = (float)rand() / (float)(RAND_MAX / c);
 		v->w[i] = c;
 		v->dw[i] = 0;
@@ -94,7 +113,15 @@ float Tensor_WeightedSum(Tensor* v1, Tensor* v2)
 	int n = v1->n;
 	for (int i = 0; i < n; i++)
 	{
-		a += v1->w[i] * v2->w[i];
+		if ((v1->w[i] < 0.0f) == (v2->w[i] < 0.0f)
+			&& abs(v2->w[i]) > FLT_MAX - abs(v1->w[i])) {
+			printf("WEIGHTED_SUM_OVERFLOW");
+			return 0;
+		}
+		else {
+			float mul = v1->w[i] * v2->w[i];
+			a += mul;
+		}
 	}
 	return a;
 }
@@ -133,8 +160,43 @@ void Tensor_Copy(Tensor* dst, Tensor* src)
 	memcpy(dst->dw, src->dw, sizeof(float) * src->n);
 	if (src->gsum!=NULL&&dst->gsum!=NULL)
 		memcpy(dst->w, src->w, sizeof(float) * src->n);
+	dst->n = src->n;
+	dst->s = src->s;
 }
 
+shape T_Argmax(Tensor* t) 
+{
+	shape idx = {0,0,0};
+	float max = t->w[0];
+	for (size_t w = 0; w < t->s.w; w++)
+	{
+		for (size_t h = 0; h < t->s.h; h++)
+		{
+			for (size_t d = 0; d < t->s.d; d++)
+			{
+				float val = Tensor_Get(t, w, h, d);
+				if (val > max) 
+				{
+					max = val;
+					idx = (shape){w, h, d};
+				}
+			}
+		}
+	}
+	return idx;
+}
+
+Tensor* Tensor_CreateCopy(Tensor* v) 
+{
+	Tensor* t = Tensor_Create(v->s, 0, 0);
+	if (!t) 
+	{
+		printf("Tensor from copy error");
+		return NULL;
+	}
+	Tensor_Copy(t, v);
+	return t;
+}
 
 #ifdef __NVCC__
 __global__ void Tensor_PrintKernel(Tensor* v)

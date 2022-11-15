@@ -3,7 +3,13 @@
 
 Layer* Input_Create(shape out_shape)
 {
-	Layer* dl = (Layer*)malloc(sizeof(Layer));
+	Layer* dl = malloc(sizeof(Layer));
+	if (!dl)
+	{
+		printf("Input allocation error!");
+		return NULL;
+	}
+	dl->input = NULL;
 	dl->type = LT_INPUT;
 	dl->aData = NULL;
 	dl->n_inputs = out_shape.w * out_shape.h * out_shape.d;

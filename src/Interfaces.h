@@ -5,8 +5,11 @@
 extern "C"
 {
 #endif
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "Tensor.h"
+
 typedef enum LayerType {
 	LT_INPUT,
 	LT_DENSE,
