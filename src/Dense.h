@@ -32,6 +32,9 @@ Tensor *Dense_Forward(Layer* l, Tensor* x, int is_train);
 float Dense_Backward(Layer* l, Tensor* y);
 
 void Dense_Free(Dense *l);
+
+cJSON* Dense_To_JSON(Dense* d);
+void Dense_Load_JSON(Dense* d, cJSON *node);
 #ifdef __cplusplus
 }
 #endif

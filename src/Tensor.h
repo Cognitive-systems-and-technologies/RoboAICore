@@ -43,6 +43,9 @@ void Tensor_Init(Tensor* v, shape s, float c, int isTrain);
 void Tensor_Free(Tensor *v);
 
 cJSON* Tensor_To_JSON(Tensor *v);
+Tensor* Tensor_From_JSON(cJSON* node);
+void Tensor_Load_JSON(Tensor *t, cJSON* node);
+cJSON* Shape_To_JSON(shape s);
 
 //vol functions
 float Tensor_WeightedSum(Tensor* v1, Tensor *v2);

@@ -29,10 +29,10 @@ Tensor *Tensor_Create(shape s, float c, int isTrain)
 		if (isTrain)
 			if (cudaMallocManaged((void**)&v->gsum, v->n * sizeof(float)) != cudaSuccess) printf("Tensor data allocation error\n");
 	#else
-		v->w = malloc(v->n * sizeof(float));
-		v->dw = malloc(v->n * sizeof(float));
+		v->w = malloc(sizeof(float) * v->n);
+		v->dw = malloc(sizeof(float) * v->n);
 		if (isTrain)
-			v->gsum = malloc(v->n * sizeof(float));
+			v->gsum = malloc(sizeof(float) * v->n);
 	#endif
 	if (!v->w)
 	{
@@ -67,13 +67,27 @@ void Tensor_Init(Tensor *v, shape s, float c, int isTrain)
 	v->s.d = s.d;
 	v->n = s.w * s.h * s.d;
 
-	v->w = (float*)malloc(v->n*sizeof(float));
-	v->dw = (float*)malloc(v->n*sizeof(float));
+	v->w = malloc(sizeof(float) * v->n);
+	v->dw = malloc(sizeof(float) * v->n);
 	v->gsum = NULL;
 	if (isTrain)
-		v->gsum = (float*)malloc(v->n*sizeof(float));
-
-	for (size_t i = 0; i < v->n; i++) {
+		v->gsum = malloc(sizeof(float)*v->n);
+	if (!v->w)
+	{
+		printf("w allocation error!");
+		v = NULL;
+	}
+	if (!v->dw)
+	{
+		printf("dw allocation error!");
+		v = NULL;
+	}
+	if (isTrain && !v->gsum)
+	{
+		printf("gsum allocation error!");
+		v = NULL;
+	}
+	for (int i = 0; i < v->n; i++) {
 		//float x = (float)rand() / (float)(RAND_MAX / c);
 		v->w[i] = c;
 		v->dw[i] = 0;
@@ -82,17 +96,29 @@ void Tensor_Init(Tensor *v, shape s, float c, int isTrain)
 	}
 }
 
+cJSON* Shape_To_JSON(shape s) 
+{
+	/*cJSON* fld = cJSON_CreateObject();
+	const int sh[3] = {s.w, s.h, s.d};
+	cJSON* arr = cJSON_CreateIntArray(sh, 3);
+	cJSON_AddItemToObject(fld, "shape", arr);
+	*/
+	const int sh[3] = { s.w, s.h, s.d };
+	cJSON* arr = cJSON_CreateIntArray(sh, 3);
+	return arr;
+}
+
 cJSON* Tensor_To_JSON(Tensor* v) 
 {
-	cJSON* root = NULL;
-	cJSON* fld = NULL;
-	root = cJSON_CreateArray();
-	cJSON_AddItemToArray(root, fld = cJSON_CreateObject());
-	cJSON_AddNumberToObject(fld, "sw", v->s.w);
-	cJSON_AddNumberToObject(fld, "sh", v->s.h);
-	cJSON_AddNumberToObject(fld, "sd", v->s.d);
+	//cJSON* root = cJSON_CreateObject();
+	cJSON* fld = cJSON_CreateObject();
 
-	cJSON_AddNumberToObject(fld, "n", v->n);
+	//cJSON* shp = Shape_To_JSON(v->s);
+	//cJSON_AddItemReferenceToObject(fld,"awdawdawd", shp);
+
+	
+	cJSON_AddItemToObject(fld, "s", Shape_To_JSON(v->s));
+
 	cJSON *w = cJSON_CreateFloatArray(v->w, v->n);
 	cJSON_AddItemToObject(fld, "w", w);
 
@@ -100,9 +126,42 @@ cJSON* Tensor_To_JSON(Tensor* v)
 	cJSON_AddItemToObject(fld, "dw", dw);
 
 	cJSON* gsum = cJSON_CreateFloatArray(v->gsum, v->n);
-	cJSON_AddItemToObject(fld, "gsum", gsum);
+	cJSON_AddItemToObject(fld, "gs", gsum);
 
-	return root;
+	return fld;
+}
+
+Tensor* Tensor_From_JSON(cJSON *node) 
+{
+	cJSON* shp = cJSON_GetObjectItem(node, "s");
+	cJSON* w = cJSON_GetObjectItem(node, "w");
+	cJSON* dw = cJSON_GetObjectItem(node, "dw");
+	
+	shape ts = (shape){ cJSON_GetArrayItem(shp, 0)->valueint,cJSON_GetArrayItem(shp, 1)->valueint,cJSON_GetArrayItem(shp, 2)->valueint };
+	Tensor* t = Tensor_Create(ts, 0, 0);
+	int n = ts.w * ts.h * ts.d;
+	for (int i = 0; i < n; i++)
+	{
+		t->w[i] = (float)cJSON_GetArrayItem(w, i)->valuedouble;
+		t->dw[i] = (float)cJSON_GetArrayItem(dw, i)->valuedouble;
+	}
+	return t;
+}
+
+void Tensor_Load_JSON(Tensor* t, cJSON* node)
+{
+	cJSON* shp = cJSON_GetObjectItem(node, "s");
+	cJSON* w = cJSON_GetObjectItem(node, "w");
+	cJSON* dw = cJSON_GetObjectItem(node, "dw");
+
+	shape ts = (shape){ cJSON_GetArrayItem(shp, 0)->valueint,cJSON_GetArrayItem(shp, 1)->valueint,cJSON_GetArrayItem(shp, 2)->valueint };
+
+	int n = ts.w * ts.h * ts.d;
+	for (int i = 0; i < n; i++)
+	{
+		t->w[i] = (float)cJSON_GetArrayItem(w, i)->valuedouble;
+		t->dw[i] = (float)cJSON_GetArrayItem(dw, i)->valuedouble;
+	}
 }
 
 float Tensor_WeightedSum(Tensor* v1, Tensor* v2)
@@ -114,7 +173,7 @@ float Tensor_WeightedSum(Tensor* v1, Tensor* v2)
 	for (int i = 0; i < n; i++)
 	{
 		if ((v1->w[i] < 0.0f) == (v2->w[i] < 0.0f)
-			&& abs(v2->w[i]) > FLT_MAX - abs(v1->w[i])) {
+			&& fabs(v2->w[i]) > FLT_MAX - fabs(v1->w[i])) {
 			printf("WEIGHTED_SUM_OVERFLOW");
 			return 0;
 		}
@@ -135,9 +194,13 @@ void Tensor_Free(Tensor *v)
 		if (cudaFree(v) != cudaSuccess) printf("Tensor free error\n");
 	#else
 		free(v->dw);
+		v->dw = NULL;
 		free(v->w);
+		v->w = NULL;
 		free(v->gsum);
+		v->gsum = NULL;
 		free(v);
+		v = NULL;
 	#endif 
 }
 
@@ -168,11 +231,11 @@ shape T_Argmax(Tensor* t)
 {
 	shape idx = {0,0,0};
 	float max = t->w[0];
-	for (size_t w = 0; w < t->s.w; w++)
+	for (int w = 0; w < t->s.w; w++)
 	{
-		for (size_t h = 0; h < t->s.h; h++)
+		for (int h = 0; h < t->s.h; h++)
 		{
-			for (size_t d = 0; d < t->s.d; d++)
+			for (int d = 0; d < t->s.d; d++)
 			{
 				float val = Tensor_Get(t, w, h, d);
 				if (val > max) 

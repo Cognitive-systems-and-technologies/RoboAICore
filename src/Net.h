@@ -26,6 +26,11 @@ typedef struct _Net
 void Net_Init(Net* net, Tensor*(*forward)(Net* n, Tensor* x, int is_training), float (*backward) (Net *n, Tensor *y), void (*init) (shape in));
 float Backward_Layer (Layer* l, Tensor *y);
 Tensor *Forward_Layer(Layer* l, Tensor* y);
+
+cJSON* Layer_To_JSON(Layer* l);
+void Layer_Load_JSON(Layer* t, cJSON* node);
+cJSON* Net_To_JSON(Net* n);
+void Net_Load_JSON(Net* t, cJSON* node);
 #ifdef __cplusplus
 }
 #endif

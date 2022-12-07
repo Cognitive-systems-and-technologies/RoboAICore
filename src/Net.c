@@ -37,3 +37,78 @@ Tensor *Forward_Layer(Layer* l, Tensor* x)
 	}
 	return y;
 }
+
+cJSON* Layer_To_JSON(Layer* l) 
+{
+	cJSON* Layer = cJSON_CreateObject();
+	cJSON_AddItemToObject(Layer, "os", Shape_To_JSON(l->out_shape));
+	cJSON_AddNumberToObject(Layer, "ni", l->n_inputs);
+	cJSON_AddNumberToObject(Layer, "lt", l->type);
+	cJSON_AddItemReferenceToObject(Layer, "o", Tensor_To_JSON(l->output));
+
+	switch (l->type)
+	{
+		case LT_DENSE: {
+			Dense* data = (Dense*)l->aData;
+			cJSON_AddItemReferenceToObject(Layer, "d", Dense_To_JSON(data));
+		}break;
+		default:
+			break;
+	}
+
+	return Layer;
+}
+
+void Layer_Load_JSON(Layer* t, cJSON* node)
+{
+	cJSON* output_shape = cJSON_GetObjectItem(node, "os"); //shape
+	cJSON* layer_type = cJSON_GetObjectItem(node, "lt"); //type
+	cJSON* output = cJSON_GetObjectItem(node, "o"); //tensor
+	cJSON* num_inputs = cJSON_GetObjectItem(node, "ni"); //num_inputs
+	cJSON* jData = cJSON_GetObjectItem(node, "d"); //Layer additional data
+
+	shape os = (shape){ cJSON_GetArrayItem(output_shape, 0)->valueint,cJSON_GetArrayItem(output_shape, 1)->valueint,cJSON_GetArrayItem(output_shape, 2)->valueint };
+	t->out_shape = os;
+	t->n_inputs = num_inputs->valueint;
+	t->type = (LayerType)layer_type->valueint;
+
+	Tensor_Load_JSON(t->output, output);
+	if(!cJSON_IsNull(jData))
+		//Load layer data
+		switch (t->type)
+		{
+			case LT_DENSE: {
+				Dense* data = (Dense*)t->aData;
+				Dense_Load_JSON(data, jData);
+			}break;
+			default:
+				break;
+		}
+}
+
+cJSON* Net_To_JSON(Net* n) 
+{
+	cJSON* jNet = cJSON_CreateObject();
+	cJSON* jLayers = cJSON_CreateArray();
+	cJSON_AddNumberToObject(jNet, "n_layers", n->n_layers);
+	for (int i = 0; i < n->n_layers; i++)
+	{
+		cJSON* jLayer = Layer_To_JSON(n->Layers[i]);
+		cJSON_AddItemReferenceToArray(jLayers, jLayer);
+	}
+	cJSON_AddItemToObject(jNet, "Layers", jLayers);
+	return jNet;
+}
+
+void Net_Load_JSON(Net* t, cJSON* node) 
+{
+	cJSON* Layers = cJSON_GetObjectItem(node, "Layers"); //Layers
+	cJSON* n_layers = cJSON_GetObjectItem(node, "n_layers"); //num_layers
+	int n = n_layers->valueint;
+	for (int i = 0; i < n; i++)
+	{
+		cJSON* l = cJSON_GetArrayItem(Layers, i);
+		Layer_Load_JSON(t->Layers[i], l);
+	}
+}
+

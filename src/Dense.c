@@ -21,7 +21,7 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 	dl->out_shape = (shape){ 1, 1, num_neurons };
 	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
 	dl->output = Tensor_Create(dl->out_shape, 0, 0);
-
+	dl->input = NULL;
 	// optional
 	l->l1_decay_mul = 0.0f;
 	l->l2_decay_mul = 1.0f;
@@ -29,7 +29,7 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 	float bias = 0.0f;
 
 	l->n_filters = dl->out_shape.d;
-	l->filters = malloc(dl->out_shape.d*sizeof(Tensor));
+	l->filters = malloc(sizeof(Tensor)*dl->out_shape.d);
 	if (!l->filters)
 	{
 		printf("Dense filters allocation error!");
@@ -39,7 +39,7 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 	}
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
-		float r = rngFloat();// (float)rand() / (float)(RAND_MAX / 1.f);
+		const float r = (float)rand() / (float)(RAND_MAX / 1.f);
 		Tensor_Init(&l->filters[i], (shape) { 1, 1, dl->n_inputs }, r, 1);
 	}
 	l->biases = Tensor_Create((shape) { 1, 1, dl->out_shape.d }, bias, 1);
@@ -92,4 +92,46 @@ void Dense_Free(Dense* l)
 	Tensor_Free(l->biases);
 	Tensor_Free(l->filters);
 	free(l);
+}
+
+cJSON* Dense_To_JSON(Dense* d)
+{
+	cJSON* Data = cJSON_CreateObject();
+	cJSON* fi = cJSON_CreateArray();
+
+	cJSON_AddNumberToObject(Data, "l1", d->l1_decay_mul);
+	cJSON_AddNumberToObject(Data, "l2", d->l2_decay_mul);
+	cJSON_AddNumberToObject(Data, "nf", d->n_filters);
+
+	for (int i = 0; i < d->n_filters; i++)
+	{
+		cJSON_AddItemToArray(fi, Tensor_To_JSON(&d->filters[i]));
+		//cJSON_AddItemToObject();
+	}
+	cJSON_AddItemToObject(Data, "filters", fi);
+	cJSON_AddItemReferenceToObject(Data, "biases", Tensor_To_JSON(d->biases));
+
+	return Data;
+}
+
+void Dense_Load_JSON(Dense* d, cJSON* node) 
+{
+	cJSON* l1 = cJSON_GetObjectItem(node, "l1");
+	cJSON* l2 = cJSON_GetObjectItem(node, "l2");
+	cJSON* nf = cJSON_GetObjectItem(node, "nf");
+
+	cJSON* filters = cJSON_GetObjectItem(node, "filters");//array
+	cJSON* biases = cJSON_GetObjectItem(node, "biases");
+
+	d->l1_decay_mul = (float)l1->valuedouble;
+	d->l2_decay_mul = (float)l2->valuedouble;
+	//load biases
+	Tensor_Load_JSON(d->biases, biases);
+	//load filters
+	int n = nf->valueint;
+	for (int i = 0; i < n; i++)
+	{
+		cJSON* f = cJSON_GetArrayItem(filters, i);
+		Tensor_Load_JSON(&d->filters[i], f);
+	}
 }
