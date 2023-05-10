@@ -12,6 +12,7 @@ extern "C" {
 #include "Input.h"
 #include "Relu.h"
 #include "Regression.h"
+#include "dList.h"
 
 typedef struct _Net
 {
@@ -25,7 +26,8 @@ typedef struct _Net
 
 void Net_Init(Net* net, Tensor*(*forward)(Net* n, Tensor* x, int is_training), float (*backward) (Net *n, Tensor *y), void (*init) (shape in));
 float Backward_Layer (Layer* l, Tensor *y);
-Tensor *Forward_Layer(Layer* l, Tensor* y);
+Tensor *Forward_Layer(Layer* l, Tensor* x);
+dList Net_getGradients(Net* net);
 
 cJSON* Layer_To_JSON(Layer* l);
 void Layer_Load_JSON(Layer* t, cJSON* node);

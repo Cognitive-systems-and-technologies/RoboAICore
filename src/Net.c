@@ -38,6 +38,23 @@ Tensor *Forward_Layer(Layer* l, Tensor* x)
 	return y;
 }
 
+dList Net_getGradients(Net* n) 
+{
+	dList grads = dList_create();
+	for (int i = 0; i < n->n_layers; i++)
+	{
+		Layer* l = n->Layers[i];
+		switch (l->type)
+		{
+			case LT_DENSE: 
+				Dense_GetGrads((Dense*)l->aData, &grads);
+				break;
+			default: break;
+		}
+	}
+	return grads;
+}
+
 cJSON* Layer_To_JSON(Layer* l) 
 {
 	cJSON* Layer = cJSON_CreateObject();

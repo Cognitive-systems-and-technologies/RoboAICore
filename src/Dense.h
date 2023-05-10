@@ -8,6 +8,8 @@ extern "C" {
 #include "Tensor.h"
 #include "Interfaces.h"
 #include "TCommon.h"
+#include "TWeightsInit.h"
+#include "dList.h"
 
 typedef struct Dense
 {
@@ -21,8 +23,8 @@ typedef struct Dense
 
 	//int n_inputs;
 
-	Tensor* filters; //List<Tensor> filters;
-	int n_filters;//store filters lenght
+	Tensor* kernels; //List<Tensor> kernels;
+	int n_kernels;//store kernels lenght
 
 	Tensor *biases;
 }Dense;
@@ -31,6 +33,7 @@ Layer *Dense_Create(int num_neurons, shape in_shape);
 Tensor *Dense_Forward(Layer* l, Tensor* x, int is_train);
 float Dense_Backward(Layer* l, Tensor* y);
 
+void Dense_GetGrads(Dense* l, dList *grads);
 void Dense_Free(Dense *l);
 
 cJSON* Dense_To_JSON(Dense* d);

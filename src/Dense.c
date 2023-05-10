@@ -16,10 +16,11 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 		free(dl);
 		return NULL;
 	}
+	int inn = in_shape.w * in_shape.h * in_shape.d;
 	dl->type = LT_DENSE;
 	//common layer def
 	dl->out_shape = (shape){ 1, 1, num_neurons };
-	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
+	dl->n_inputs = inn;
 	dl->output = Tensor_Create(dl->out_shape, 0, 0);
 	dl->input = NULL;
 	// optional
@@ -28,19 +29,19 @@ Layer* Dense_Create(int num_neurons, shape in_shape)
 
 	float bias = 0.0f;
 
-	l->n_filters = dl->out_shape.d;
-	l->filters = malloc(sizeof(Tensor)*dl->out_shape.d);
-	if (!l->filters)
+	l->n_kernels = dl->out_shape.d;
+	l->kernels = malloc(sizeof(Tensor)*dl->out_shape.d);
+	if (!l->kernels)
 	{
-		printf("Dense filters allocation error!");
+		printf("Dense kernels allocation error!");
 		free(l);
 		free(dl);
 		return NULL;
 	}
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
-		const float r = (float)rand() / (float)(RAND_MAX / 1.f);
-		Tensor_Init(&l->filters[i], (shape) { 1, 1, dl->n_inputs }, r, 1);
+		//const float r = (float)rand() / (float)(RAND_MAX / 1.f);
+		Tensor_InitWeights(&l->kernels[i], (shape) { 1, 1, inn }, 1);
 	}
 	l->biases = Tensor_Create((shape) { 1, 1, dl->out_shape.d }, bias, 1);
 	
@@ -54,7 +55,7 @@ Tensor *Dense_Forward(Layer* l, Tensor* x, int is_train)
 	l->input = x; //save pointer to previous layer output
 	for (int i = 0; i < l->out_shape.d; i++) //foreach output neuron
 	{
-		float a = Tensor_WeightedSum(x, &data->filters[i]);
+		float a = Tensor_WeightedSum(x, &data->kernels[i]);
 		a += data->biases->w[i];//add bias
 		l->output->w[i] = a;
 	}
@@ -74,7 +75,7 @@ float Dense_Backward(Layer* l, Tensor* y)
 	//---------------------------------------
 	for (int i = 0; i < l->out_shape.d; i++)
 	{
-		Tensor tfi = data->filters[i];
+		Tensor tfi = data->kernels[i];
 		float chain_grad = l->output->dw[i];
 		for (int d = 0; d < l->n_inputs; d++)
 		{
@@ -86,11 +87,22 @@ float Dense_Backward(Layer* l, Tensor* y)
 	return loss;
 }
 
+void Dense_GetGrads(Dense* l, dList* grads)
+{
+	for (size_t i = 0; i < l->n_kernels; i++)
+	{
+		//add kernel
+		dList_push(grads, &l->kernels[i]);
+	}
+	//add bias
+	dList_push(grads, l->biases);
+}
+
 void Dense_Free(Dense* l) 
 {
 	//Tensor_Free(l->output);
 	Tensor_Free(l->biases);
-	Tensor_Free(l->filters);
+	Tensor_Free(l->kernels);
 	free(l);
 }
 
@@ -101,14 +113,14 @@ cJSON* Dense_To_JSON(Dense* d)
 
 	cJSON_AddNumberToObject(Data, "l1", d->l1_decay_mul);
 	cJSON_AddNumberToObject(Data, "l2", d->l2_decay_mul);
-	cJSON_AddNumberToObject(Data, "nf", d->n_filters);
+	cJSON_AddNumberToObject(Data, "nf", d->n_kernels);
 
-	for (int i = 0; i < d->n_filters; i++)
+	for (int i = 0; i < d->n_kernels; i++)
 	{
-		cJSON_AddItemToArray(fi, Tensor_To_JSON(&d->filters[i]));
+		cJSON_AddItemToArray(fi, Tensor_To_JSON(&d->kernels[i]));
 		//cJSON_AddItemToObject();
 	}
-	cJSON_AddItemToObject(Data, "filters", fi);
+	cJSON_AddItemToObject(Data, "kernels", fi);
 	cJSON_AddItemReferenceToObject(Data, "biases", Tensor_To_JSON(d->biases));
 
 	return Data;
@@ -120,18 +132,18 @@ void Dense_Load_JSON(Dense* d, cJSON* node)
 	cJSON* l2 = cJSON_GetObjectItem(node, "l2");
 	cJSON* nf = cJSON_GetObjectItem(node, "nf");
 
-	cJSON* filters = cJSON_GetObjectItem(node, "filters");//array
+	cJSON* kernels = cJSON_GetObjectItem(node, "kernels");//array
 	cJSON* biases = cJSON_GetObjectItem(node, "biases");
 
 	d->l1_decay_mul = (float)l1->valuedouble;
 	d->l2_decay_mul = (float)l2->valuedouble;
 	//load biases
 	Tensor_Load_JSON(d->biases, biases);
-	//load filters
+	//load kernels
 	int n = nf->valueint;
 	for (int i = 0; i < n; i++)
 	{
-		cJSON* f = cJSON_GetArrayItem(filters, i);
-		Tensor_Load_JSON(&d->filters[i], f);
+		cJSON* f = cJSON_GetArrayItem(kernels, i);
+		Tensor_Load_JSON(&d->kernels[i], f);
 	}
 }
