@@ -13,12 +13,13 @@ RLBrain *RLBrain_Create(shape state_shape, int n_outputs)
 	//printf("Brain created");
 	brain->buffer = ReplayBuffer_Create(64, 64);
 	brain ->par = (OptParams){ 0.1f, 1.0f, 0.001f, 32, ADAGRAD, 1.0f };
+	brain->discount = 0.95f;
 	return brain;
 }
 
-void RLBrain_Record(RLBrain *brain, Tensor* state, Tensor* next_state, int action, float reward)
+void RLBrain_Record(RLBrain *brain, Tensor* state, Tensor* next_state, int action, float reward, int done)
 {
-	ReplayBuffer_Record(brain->buffer, state, next_state, action, reward);
+	ReplayBuffer_Record(brain->buffer, state, next_state, action, reward, done);
 }
 
 Tensor* RLBrain_Forward(RLBrain *brain, Tensor *state)
@@ -63,7 +64,14 @@ float RLBrain_Train(RLBrain *brain)
 			Sample *s = (Sample*)brain->buffer->buffer->data[i].elem;
 			Tensor* y = Tensor_Create((shape){1,1,2}, 0, 0);
 			y->w[0] = (float)s->action;
-			y->w[1] = s->reward;
+			if(s->done)
+				y->w[1] = s->reward;
+			else 
+			{
+				Tensor* next = brain->net->NetForward(brain->net, s->next_state, 0);
+				float Q_sa = T_MaxValue(next);
+				y->w[1] = s->reward + brain->discount * Q_sa;
+			}
 			Info info = Optimize(brain->net, &brain->par, s->state, y);
 			cur_loss += info.cost_loss;
 			Tensor_Free(y);

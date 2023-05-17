@@ -2,7 +2,7 @@
 
 ReplayBuffer *ReplayBuffer_Create(int capacity, int batch_size)
 {
-	ReplayBuffer *rb = (ReplayBuffer *)malloc(sizeof(ReplayBuffer));
+	ReplayBuffer *rb = malloc(sizeof(ReplayBuffer));
     if (!rb) 
     {
         printf("Replay buffer allocation error");
@@ -17,9 +17,9 @@ ReplayBuffer *ReplayBuffer_Create(int capacity, int batch_size)
 void ReplayBuffer_Record(ReplayBuffer *rBuffer, Tensor* state,
 	Tensor* next_state,
 	int action,
-	float reward) 
+	float reward, int done)
 {
-    Sample* s = createSample(state, next_state, action, reward);
+    Sample* s = createSample(state, next_state, action, reward, done);
     dequeAppend(rBuffer->buffer, (DequeElem){ s }, freeSample);
 }
 
@@ -31,9 +31,9 @@ Sample ReplayBuffer_Sample(ReplayBuffer* rb)
 Sample* createSample(Tensor* state,
     Tensor* next_state,
     int action,
-    float reward)
+    float reward, int done)
 {
-    Sample* s = (Sample*)malloc(sizeof(Sample));
+    Sample* s = malloc(sizeof(Sample));
     if (!s)
     {
         printf("Sample allocation error!");
@@ -43,6 +43,7 @@ Sample* createSample(Tensor* state,
     s->reward = reward;
     s->state = Tensor_CreateCopy(state);
     s->next_state = Tensor_CreateCopy(next_state);
+    s->done = done;
     return s;
 }
 

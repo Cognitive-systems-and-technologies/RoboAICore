@@ -18,6 +18,7 @@ typedef struct
 	Tensor* next_state;
 	int action;
 	float reward;
+	int done;//bool
 }Sample;
 
 typedef struct 
@@ -31,14 +32,14 @@ ReplayBuffer *ReplayBuffer_Create(int capacity, int batch_size);
 void ReplayBuffer_Record(ReplayBuffer* rBuffer, Tensor* state,
 	Tensor* next_state,
 	int action,
-	float reward);
+	float reward, int done);
 Sample ReplayBuffer_Sample(ReplayBuffer* rb);
 void ReplayBuffer_Free(ReplayBuffer *rBuffer);
 
 Sample* createSample(Tensor* state,
 	Tensor* next_state,
 	int action,
-	float reward);
+	float reward, int done);
 void freeSample(void* sample);
 
 #ifdef __cplusplus
