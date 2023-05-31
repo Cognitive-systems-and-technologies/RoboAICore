@@ -17,6 +17,9 @@ float rngFloat();
 int rngInt(int min, int max);
 float rngNormal();
 
+void InsertionSort(float* values, int n);
+float Mean(float* items, int n);
+float Derivative(float (*f)(float), float x0);
 #ifdef __cplusplus
 }
 #endif
