@@ -36,7 +36,7 @@ float MSE_Backward(Layer* l, Tensor* y_true)
 	float sum = 0;
 	for (size_t i = 0; i < x->n; i++)
 	{
-		float dy = x->w[i] - y_true->w[i];
+		float dy = (2.f/x->n) * (x->w[i] - y_true->w[i]);
 		x->dw[i] = dy;
 
 		float t = y_true->w[i] - x->w[i];
