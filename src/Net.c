@@ -3,9 +3,33 @@
 
 void Net_Init(Net* net, Tensor* (*forward)(Net* n, Tensor* x, int is_training), float (*backward) (Net* n, Tensor* y), void (*init) (shape in))
 {
-	net->NetInit = init;
 	net->NetForward = forward;
 	net->NetBackward = backward;
+}
+
+Net Net_Create() 
+{
+	Net n;
+	n.Layers = NULL;
+	n.n_layers = 0;
+	n.NetForward = Seq_Forward;
+	n.NetBackward = Seq_Backward;
+	return n;
+}
+
+Layer* Net_AddLayer(Net* n, Layer* l) 
+{
+	int cnt = n->n_layers + 1;
+	Layer** tmp = (Layer**)realloc(n->Layers, sizeof(Layer*) * cnt);
+	if (!tmp) {
+		free(n->Layers);
+		n->Layers = NULL;
+		return NULL;
+	}
+	n->n_layers = cnt;
+	n->Layers = tmp;
+	n->Layers[cnt - 1] = l;
+	return n->Layers[cnt - 1];
 }
 
 float Backward_Layer(Layer* l, Tensor* y) 
@@ -17,6 +41,8 @@ float Backward_Layer(Layer* l, Tensor* y)
 	case LT_SOFTMAX: loss = Softmax_Backward(l, y); break;
 	case LT_RELU: loss = Relu_Backward(l, y); break;
 	case LT_REGRESSION: loss = Regression_Backward(l, y); break;
+	case LT_MSE: loss = MSE_Backward(l,y); break;
+	case LT_TANHA: loss = TanhA_Backward(l, y); break;
 	default:
 		break;
 	}
@@ -33,9 +59,33 @@ Tensor *Forward_Layer(Layer* l, Tensor* x)
 	case LT_SOFTMAX: y = Softmax_Forward(l, x, 0); break;
 	case LT_RELU: y = Relu_Forward(l, x, 0); break;
 	case LT_REGRESSION: y = Regression_Forward(l, x, 0); break;
+	case LT_MSE: y = MSE_Forward(l, x, 0); break;
+	case LT_TANHA: y = TanhA_Forward(l, x, 0); break;
 	default: break;
 	}
 	return y;
+}
+
+Tensor* Seq_Forward(Net* n, Tensor* x, int is_training)
+{
+	Tensor* y = Forward_Layer(n->Layers[0], x);;
+	//forward
+	for (int i = 1; i < n->n_layers; i++)
+	{
+		y = Forward_Layer(n->Layers[i], y);
+	}
+	return y;
+}
+
+float Seq_Backward(Net* n, Tensor* y)
+{
+	int N = n->n_layers;
+	float loss = Backward_Layer(n->Layers[N - 1], y); // last layer assumed to be loss layer
+	for (int i = N - 2; i >= 0; i--)
+	{
+		Backward_Layer(n->Layers[i], y);
+	}
+	return loss;
 }
 
 dList Net_getGradients(Net* n) 
@@ -122,6 +172,7 @@ void Net_Load_JSON(Net* t, cJSON* node)
 	cJSON* Layers = cJSON_GetObjectItem(node, "Layers"); //Layers
 	cJSON* n_layers = cJSON_GetObjectItem(node, "n_layers"); //num_layers
 	int n = n_layers->valueint;
+	
 	for (int i = 0; i < n; i++)
 	{
 		cJSON* l = cJSON_GetArrayItem(Layers, i);
