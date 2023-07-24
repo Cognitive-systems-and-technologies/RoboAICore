@@ -46,7 +46,7 @@ src/TWeightsInit.c
 src/TCommon.c
 src/TanhA.c
 src/Relu.c
-#src/Optimizer.c
+src/Optimizer.c
 src/Model.c
 src/MSE.c
 src/Regression.c
