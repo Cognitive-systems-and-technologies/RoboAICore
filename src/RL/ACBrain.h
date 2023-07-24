@@ -10,14 +10,13 @@ extern "C" {
 #include "TCommon.h"
 #include "Interfaces.h"
 #include "Optimizer.h"
-#include "Sequential.h"
 #include "Tensor.h"
 #include "ReplayBuffer.h"
 
 typedef struct ACBrain
 {
 	ReplayBuffer *buffer;
-	Net *net;
+	Model net;
 	float discount;
 	shape input_shape;
 	int num_outputs;
@@ -28,7 +27,7 @@ typedef struct ACBrain
 }ACBrain;
 
 ACBrain*ACBrain_Create(shape state_shape, int n_outputs);
-Net *ACBrain_CreateNet(shape input_sh, int n_outputs);
+Model ACBrain_CreateNet(shape input_sh, int n_outputs);
 void ACBrain_Record(ACBrain *brain, Tensor* state, Tensor* next_state, int action, float reward, int done);
 Tensor* ACBrain_Forward(ACBrain *brain, Tensor *state);
 float ACBrain_Train(ACBrain *brain);

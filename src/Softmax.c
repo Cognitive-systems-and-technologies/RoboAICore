@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-Layer* Softmax_Create(shape in_shape)
+Layer* Softmax_Create(Layer *in)
 {
 	Layer* dl = malloc(sizeof(Layer));
 	Softmax* l = malloc(sizeof(Softmax));
@@ -17,13 +17,14 @@ Layer* Softmax_Create(shape in_shape)
 		free(dl);
 		return NULL;
 	}
+	dl->input = in;
 	dl->type = LT_SOFTMAX;
-	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
+	dl->n_inputs = in->out_shape.w * in->out_shape.h * in->out_shape.d;
 	dl->out_shape = (shape){ 1, 1, dl->n_inputs };
-	dl->output = Tensor_Create(dl->out_shape, 0, 0);
+	dl->output = Tensor_Create(dl->out_shape, 0);
 
-	l->es = malloc(dl->out_shape.d*sizeof(float));
-	if (!l->es)
+	l->sums = malloc(dl->out_shape.d*sizeof(float));
+	if (!l->sums)
 	{
 		printf("Softmax es allocation error!");
 		free(l);
@@ -32,17 +33,16 @@ Layer* Softmax_Create(shape in_shape)
 	}
 	for (int i = 0; i < dl->out_shape.d; i++)
 	{
-		l->es[i] = 0.f;
+		l->sums[i] = 0.f;
 	}
 	dl->aData = l;
 	return dl;
 }
 
-Tensor *Softmax_Forward(Layer* l, Tensor* x, int is_train)
+Tensor *Softmax_Forward(Layer* l)
 {
-	l->input = x; //save pointer to previous layer output
 	Softmax* data = (Softmax*)l->aData;
-
+	Tensor* x = l->input;
 	//get max
 	float amax = x->w[0];
 	for (int i = 1; i < l->out_shape.d; i++)
@@ -56,33 +56,27 @@ Tensor *Softmax_Forward(Layer* l, Tensor* x, int is_train)
 	{
 		float e = (float)exp(x->w[i] - amax);
 		esum += e;
-		data->es[i] = e;
+		data->sums[i] = e;
 	}
 	// normalize output sum to one
 	for (int i = 0; i < l->out_shape.d; i++)
 	{
-		data->es[i] /= esum;
-		l->output->w[i] = data->es[i];
+		data->sums[i] /= esum;
+		l->output.w[i] = data->sums[i];
 	}
-	return l->output;
+	return &l->output;
 }
 
-
-float Softmax_Backward(Layer* l, Tensor* y)
+void Softmax_Backward(Layer* l, Tensor* y)
 {
 	Softmax* data = l->aData;
 	float loss = 0.f;
 	Tensor* x = l->input;
-	for (int i = 0; i < x->n; i++)
-	{
-		x->dw[i] = 0.f;
-	}
 	for (int i = 0; i < l->out_shape.d; i++)
 	{
-		float mul = -(y->w[i] - data->es[i]);
-		x->dw[i] = mul;
+		float mul = -(y->w[i] - data->sums[i]);
+		x->dw[i] += mul;
 		if (y->w[i] > 0)
-			loss = -(float)log(data->es[i]);
+			loss += -(float)log(data->sums[i]);
 	}
-	return loss;
 }

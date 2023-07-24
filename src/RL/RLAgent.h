@@ -21,7 +21,7 @@ typedef enum AgentPhase
 typedef struct RLAgent
 {
 	RLBrain *brain;
-	Tensor* state;
+	Tensor state;
 	float epsilon;
 	AgentPhase phase;
 }RLAgent;

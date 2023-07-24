@@ -5,12 +5,16 @@
 extern "C" {
 #endif 
 
-#include "Tensor.h"
 #include "Interfaces.h"
+#include "Tensor.h"
 
-Layer *Regression_Create(shape in_shape);
-Tensor *Regression_Forward(Layer* l, Tensor* x, int is_train);
-float Regression_Backward(Layer* l, Tensor* y);
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+Layer *Regression_Create(Layer *in);
+Tensor *Regression_Forward(Layer* l);
+void Regression_Backward(Layer* l, Tensor* y);
 
 #ifdef __cplusplus
 }

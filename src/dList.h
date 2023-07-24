@@ -7,10 +7,13 @@ extern "C" {
 
 #include <stdlib.h>
 #define getLElem(E, L, I)  ((E*)L.data[I].e)
+#define getLEInfo(E, L, I)  ((E*)L.data[I].i)
+#define LElem(T, E)  ((T*)E->e)
 
 	typedef struct dlElem
 	{
-		void* e;
+		void* e;//element host
+		void* i;//element info
 	}dlElem;
 
 	typedef struct dList
@@ -21,7 +24,7 @@ extern "C" {
 
 	dList dList_create();
 	void dList_realloc(dList* d);//add new elem
-	void dList_push(dList* d, void* t);//add and assign
+	void* dList_push(dList* d, void* t);//add and assign
 	void dList_free(dList* d);//clear list
 
 #ifdef __cplusplus

@@ -11,6 +11,7 @@ extern "C" {
 #include "Tensor.h"
 #include "Interfaces.h"
 #include "SimpleDeque.h"
+#include "dList.h"
 
 typedef struct
 {
@@ -33,7 +34,7 @@ void ReplayBuffer_Record(ReplayBuffer* rBuffer, Tensor* state,
 	Tensor* next_state,
 	int action,
 	float reward, int done);
-Sample ReplayBuffer_Sample(ReplayBuffer* rb);
+dList ReplayBuffer_Sample(ReplayBuffer* rb);
 void ReplayBuffer_Free(ReplayBuffer *rBuffer);
 
 Sample* createSample(Tensor* state,

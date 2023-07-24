@@ -8,6 +8,7 @@ extern "C"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 #include "Tensor.h"
 
 typedef enum LayerType {
@@ -16,21 +17,36 @@ typedef enum LayerType {
 	LT_RELU,
 	LT_SOFTMAX,
 	LT_REGRESSION,
-	LT_SVM,
-	LT_CONV
+	LT_CONV,
+	LT_MAXPOOL,
+	LT_MSE,
+	LT_TANHA
 } LayerType;
+
+typedef enum LayerActivation {
+	A_NONE,
+	A_RELU,
+	A_LRELU,//leaky relu
+	A_TANH
+} LayerActivation;
 
 typedef struct Layer
 {
 	shape out_shape;
+	shape in_shape;
 	int n_inputs;
 	LayerType type;
 
 	Tensor* input;
-	Tensor *output;
+	Tensor output;
 
 	void* aData;//additional layer data
 }Layer;
+
+typedef struct LData
+{
+	float loss;
+}LData;
 
 #ifdef __cplusplus
 }

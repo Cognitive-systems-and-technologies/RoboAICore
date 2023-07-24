@@ -24,35 +24,18 @@ void RLBrain_Record(RLBrain *brain, Tensor* state, Tensor* next_state, int actio
 
 Tensor* RLBrain_Forward(RLBrain *brain, Tensor *state)
 {
-	Tensor *y = Seq_Forward(brain->net, state, 0);
+	Tensor *y = Seq_Forward(&brain->net, state, 0);
 	return y;
 }
 
-Net *RLBrain_CreateNet(shape input_sh, int n_outputs)
+Model RLBrain_CreateNet(shape input_sh, int n_outputs)
 {
-	Net *n = (Net*)malloc(sizeof(Net));
-	if(!n)
-	{
-		//printf("Net allocation error");
-		return NULL;
-	}
-	n->n_layers = 5;
-	n->Layers = (Layer**)malloc(sizeof(Layer*)*n->n_layers);
-	if (!n->Layers)
-	{
-		//printf("Layers allocation error!");
-		return NULL;
-	}
-
-	n->Layers[0] = Input_Create(input_sh);
-	n->Layers[1] = Dense_Create(8, n->Layers[0]->out_shape);
-	n->Layers[2] = Dense_Create(8, n->Layers[1]->out_shape);
-	n->Layers[3] = Dense_Create(n_outputs, n->Layers[2]->out_shape);
-	n->Layers[4] = Regression_Create(n->Layers[3]->out_shape);
-
-	n->NetForward = Seq_Forward;
-	n->NetBackward = Seq_Backward;
-
+	Model n = Model_Create();
+	Layer* l = Model_AddLayer(&n, Input_Create(input_sh));
+	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
+	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
+	l = Model_AddLayer(&n, Dense_Create(n_outputs, R_XAVIER, l));
+	l = Model_AddLayer(&n, Regression_Create(l));
 	return n;
 }
 float RLBrain_Train(RLBrain *brain)
@@ -62,19 +45,20 @@ float RLBrain_Train(RLBrain *brain)
 		for (int i = brain->buffer->buffer->length-(int)1; i > 0; i--)
 		{
 			Sample *s = (Sample*)brain->buffer->buffer->data[i].elem;
-			Tensor* y = Tensor_Create((shape){1,1,2}, 0, 0);
-			y->w[0] = (float)s->action;
+			Tensor y = Tensor_Create((shape){1,1,2}, 0);
+			y.w[0] = (float)s->action;
 			if(s->done)
-				y->w[1] = s->reward;
+				y.w[1] = s->reward;
 			else 
 			{
-				Tensor* next = brain->net->NetForward(brain->net, s->next_state, 0);
+				Tensor* next = brain->net.NetForward(&brain->net, s->next_state, 0);
 				float Q_sa = T_MaxValue(next);
-				y->w[1] = s->reward + brain->discount * Q_sa;
+				y.w[1] = s->reward + brain->discount * Q_sa;
 			}
-			Info info = Optimize(brain->net, &brain->par, s->state, y);
-			cur_loss += info.cost_loss;
-			Tensor_Free(y);
+			Optimize(&brain->net, &brain->par, s->state, &y);
+			LData* d = (LData*)brain->net.Layers[brain->net.n_layers - 1]->aData;
+			cur_loss += d->loss;
+			Tensor_Free(&y);
 		}
 		float loss = cur_loss / brain->buffer->batch_size;
 		return loss;

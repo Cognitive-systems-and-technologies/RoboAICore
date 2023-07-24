@@ -10,12 +10,12 @@ extern "C" {
 
 typedef struct Softmax
 {
-	float* es;
+	float* sums;
 }Softmax;
 
-Layer *Softmax_Create(shape in_shape);
-Tensor *Softmax_Forward(Layer* l, Tensor* x, int is_train);
-float Softmax_Backward(Layer* l, Tensor* y);
+Layer *Softmax_Create(Layer *in);
+Tensor *Softmax_Forward(Layer* l);
+void Softmax_Backward(Layer* l, Tensor* y);
 
 #ifdef __cplusplus
 }
