@@ -12,9 +12,16 @@ extern "C" {
 #include <stdio.h>
 #include <math.h>
 
-Layer * MSE_Create(shape in_shape);
-Tensor * MSE_Forward(Layer* l, Tensor* x, int is_train);
-float MSE_Backward(Layer* l, Tensor* y_true);
+Layer *MSE_Create(Layer* in);
+Tensor *MSE_Forward(Layer* l);
+void MSE_Backward(Layer* l, Tensor* y_true);
+
+#ifdef __NVCC__
+Layer* MSE_CreateGPU(Layer* in);
+Tensor* MSE_ForwardGPU(Layer* l);
+__global__ void MSE_BackwardKernels(int limit, float* xw, float* xdw, float* yw, float n, float* sum);
+void MSE_BackwardGPU(Layer* l, Tensor* y_true);
+#endif // __NVCC__
 
 #ifdef __cplusplus
 }

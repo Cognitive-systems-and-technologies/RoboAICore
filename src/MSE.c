@@ -1,48 +1,48 @@
 #include "MSE.h"
 
-Layer* MSE_Create(shape in_shape)
+Layer* MSE_Create(Layer *in)
 {
-	Layer* dl = malloc(sizeof(Layer));
-	if (!dl)
+	Layer* l = (Layer*)malloc(sizeof(Layer));
+	if (!l)
 	{
 		printf("MSE allocation error!");
 		return NULL;
 	}
-	dl->type = LT_MSE;
-	dl->n_inputs = in_shape.w * in_shape.h * in_shape.d;
-	dl->out_shape = (shape){ 1, 1, dl->n_inputs };
-	dl->output = Tensor_Create(dl->out_shape, 0, 0);
-	dl->input = NULL;
-	dl->aData = NULL;
-	return dl;
+	l->type = LT_MSE;
+	l->n_inputs = in->out_shape.w * in->out_shape.h * in->out_shape.d;
+	l->out_shape = (shape){ 1, 1, l->n_inputs };
+	l->output = Tensor_Create(l->out_shape, 0);
+	l->input = &in->output;
+
+	LData* ld = (LData*)malloc(sizeof(LData));
+	if (ld) {
+		ld->loss = 0;
+	}
+	else printf("MSE data allocation error\n");
+	l->aData = ld;
+	printf("Mse, output shape: [%d, %d, %d]\n", l->out_shape.w, l->out_shape.h, l->out_shape.d);
+	return l;
 }
 
-Tensor * MSE_Forward(Layer* l, Tensor* x, int is_train)
+Tensor * MSE_Forward(Layer* l)
 {
-	l->input = x;
-	Tensor_Copy(l->output, x);
-	return l->output;
+	Tensor_CopyData(&l->output, l->input);
+	return &l->output;
 }
 
-float MSE_Backward(Layer* l, Tensor* y_true)
+void MSE_Backward(Layer* l, Tensor* y_true)
 {
 	Tensor* x = l->input;
-	/*for (int i = 0; i < x->n; i++)
-	{
-		x->dw[i] = 0.f;
-	}*/
-	memset(x->dw, 0, sizeof(float)*x->n);
-	
 	float sum = 0;
-	for (size_t i = 0; i < x->n; i++)
+	for (int i = 0; i < x->n; i++)
 	{
-		float dy = (2.f/x->n) * (x->w[i] - y_true->w[i]);
-		x->dw[i] = dy;
+		float dy = (2.f/(float)x->n) * (x->w[i] - y_true->w[i]);
+		x->dw[i] += dy;
 
 		float t = y_true->w[i] - x->w[i];
 		sum += t*t;
 	}
-
-	float loss = sum / x->n;
-	return loss;
+	float loss = sum / (float)x->n;
+	LData* ld = (LData*)l->aData;
+	ld->loss = loss;
 }

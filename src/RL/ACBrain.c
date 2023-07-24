@@ -27,43 +27,26 @@ void ACBrain_Record(ACBrain *brain, Tensor* state, Tensor* next_state, int actio
 
 Tensor* ACBrain_Forward(ACBrain *brain, Tensor *state)
 {
-	Tensor *y = Seq_Forward(brain->net, state, 0);
+	Tensor *y = Seq_Forward(&brain->net, state, 0);
 	return y;
 }
 
-Net *ACBrain_CreateNet(shape input_sh, int n_outputs)
+Model ACBrain_CreateNet(shape input_sh, int n_outputs)
 {
-	Net *n = (Net*)malloc(sizeof(Net));
-	if(!n)
-	{
-		//printf("Net allocation error");
-		return NULL;
-	}
-	n->n_layers = 7;
-	n->Layers = (Layer**)malloc(sizeof(Layer*)*n->n_layers);
-	if (!n->Layers)
-	{
-		//printf("Layers allocation error!");
-		return NULL;
-	}
+	Model n = Model_Create();
+	Layer* l = Model_AddLayer(&n, Input_Create(input_sh));
+	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
+	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
 
-	n->Layers[0] = Input_Create(input_sh);
-	n->Layers[1] = Dense_Create(8, n->Layers[0]->out_shape);
-	n->Layers[2] = Dense_Create(8, n->Layers[1]->out_shape);
+	Layer *actor = Model_AddLayer(&n, Dense_Create(n_outputs, R_XAVIER, l));
+	actor = Model_AddLayer(&n, Regression_Create(actor));
 
-	n->Layers[3] = Dense_Create(n_outputs, n->Layers[2]->out_shape);
-	n->Layers[4] = Regression_Create(n->Layers[3]->out_shape);//policy logits
-
-	n->Layers[5] = Dense_Create(1, n->Layers[2]->out_shape);
-	n->Layers[6] = Regression_Create(n->Layers[5]->out_shape);//value
-
-	n->NetForward = Seq_Forward;
-	n->NetBackward = Seq_Backward;
-
+	Layer *critic = Model_AddLayer(&n, Dense_Create(1, R_XAVIER, l));
+	critic = Model_AddLayer(&n, Regression_Create(critic));
 	return n;
 }
 float ACBrain_Train(ACBrain *brain)
 {
-	//todo test
+	//todo fix code
 	return -1.f;
 }

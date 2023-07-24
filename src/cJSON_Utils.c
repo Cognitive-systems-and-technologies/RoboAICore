@@ -109,9 +109,9 @@ static int compare_strings(const unsigned char *string1, const unsigned char *st
 }
 
 /* securely comparison of floating-point variables */
-static cJSON_bool compare_double(double a, double b)
+static cJSON_bool compare_double(float a, float b)
 {
-    double maxVal = fabs(a) > fabs(b) ? fabs(a) : fabs(b);
+    float maxVal = fabs(a) > fabs(b) ? fabs(a) : fabs(b);
     return (fabs(a - b) <= maxVal * DBL_EPSILON);
 }
 

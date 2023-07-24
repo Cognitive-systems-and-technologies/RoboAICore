@@ -23,9 +23,11 @@ void ReplayBuffer_Record(ReplayBuffer *rBuffer, Tensor* state,
     dequeAppend(rBuffer->buffer, (DequeElem){ s }, freeSample);
 }
 
-Sample ReplayBuffer_Sample(ReplayBuffer* rb) 
+dList ReplayBuffer_Sample(ReplayBuffer* rb)
 {
+    dList lst = dList_create();
     //sample buffer
+    return lst;
 }
 
 Sample* createSample(Tensor* state,

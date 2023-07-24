@@ -1,37 +1,33 @@
 #include "Utils.h"
-#include <stdlib.h>
-#include <stdio.h>
 
-void TPrint(Tensor* x)
+void WriteToFile(const char* txt, const char* file)
 {
-    printf("[");
-    for (size_t d = 0; d < x->s.d; d++)
-    {
-        printf("[");
-        for (size_t i = 0; i < x->s.w; i++)
-        {
-            for (size_t j = 0; j < x->s.h; j++)
-            {
-                printf("%f,", Tensor_Get(x, i, j, d));
-            }
-            //printf("\n");
-        }
-        printf("]");
-    }
-    printf("]\n");
+	FILE* fptr;
+	fptr = fopen(file, "w");
+
+	if (fptr == NULL)
+	{
+		printf("Error!");
+		exit(1);
+	}
+	fprintf(fptr, txt);
+	fclose(fptr);
 }
 
-void shuffle(TPair* array, int n)
+void PrintArray(float* w, int n)
 {
-    if (n > 1)
-    {
-        int i;
-        for (i = 0; i < n - 1; i++)
-        {
-            int j = i + rand() / (RAND_MAX / (n - i) + 1);
-            TPair t = array[j];
-            array[j] = array[i];
-            array[i] = t;
-        }
-    }
+	printf("\n[");
+	for (size_t i = 0; i < n; i++)
+	{
+		printf("%f, ", w[i]);
+	}
+	printf("]\n");
+}
+
+void FillArray(float* w, int n, float v) 
+{
+	for (int i = 0; i < n; i++)
+	{
+		w[i] = v;
+	}
 }

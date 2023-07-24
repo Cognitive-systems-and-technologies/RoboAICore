@@ -7,7 +7,7 @@ RLAgent *RLAgent_Create(shape state_shape, int n_outputs)
 	{
 		return NULL;
 	}
-    agent->state = Tensor_Create(state_shape, 0, 0);
+    agent->state = Tensor_Create(state_shape, 0);
 	agent->brain = RLBrain_Create(state_shape, n_outputs);
 	agent->epsilon = 0.9f;
 	agent->phase = A_TRAIN;

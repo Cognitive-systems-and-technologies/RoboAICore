@@ -8,8 +8,18 @@ extern "C" {
 #include "Tensor.h"
 #include "Interfaces.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+
 Layer *Input_Create(shape out_shape);
-Tensor *Input_Forward(Layer* l, Tensor* x, int is_train);
+Tensor *Input_Forward(Layer* l, Tensor* x);
+
+void Input_Free(Layer *l);
+#ifdef __NVCC__
+Layer* Input_CreateGPU(shape out_shape);
+Tensor* Input_ForwardGPU(Layer* l, Tensor* x);
+#endif // __NVCC__
+
 #ifdef __cplusplus
 }
 #endif

@@ -4,14 +4,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif 
-
-#include "Optimizer.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-typedef struct Wrapper { void* elem; }Wrapper;
-
-void shuffle(TPair* array, int n);
-//#define shuffle_type(type, array, n) ({for (int i = 0; i < n - 1; i++){size_t j = i + rand() / (RAND_MAX / (n - i) + 1); type t = array[j]; array[j] = array[i]; array[i] = t;}})
+void WriteToFile(const char* txt, const char* file);
+void PrintArray(float* w, int n);
+void FillArray(float* w, int n, float v);
 #ifdef __cplusplus
 }
 #endif
