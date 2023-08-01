@@ -19,10 +19,9 @@ Layer* Input_Create(shape out_shape)
 	return dl;
 }
 
-Tensor *Input_Forward(Layer* l, Tensor* x)
+Tensor *Input_Forward(Layer* l)
 {
-	l->input = NULL;
-	Tensor_CopyData(&l->output, x);
+	Tensor_CopyData(&l->output, l->input);
 	return &l->output;
 }
 

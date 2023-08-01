@@ -30,6 +30,32 @@ Tensor Tensor_Create(shape s, float c)
 	return v;
 }
 
+Tensor Tensor_FromData(shape s, const float* data) 
+{
+	Tensor t = Tensor_Create(s, 0.f);
+	memcpy(t.w, data, sizeof(float) * t.n);
+	return t;
+}
+
+Tensor Tensor_CreateCopy(Tensor* t)
+{
+	Tensor v;
+	v.s.w = t->s.w;
+	v.s.h = t->s.h;
+	v.s.d = t->s.d;
+	v.n = t->n;
+	v.tData = NULL;
+	v.w = (float*)malloc(sizeof(float) * v.n);
+	v.dw = (float*)malloc(sizeof(float) * v.n);
+	v.sumdw = 0;
+	if (!v.w || !v.dw) printf("Tensor data allocation error");
+	else{
+		memcpy(v.w, t->w, sizeof(float) * v.n);
+		memset(v.dw, 0, sizeof(float) * v.n);
+	}
+	return v;
+}
+
 Tensor* Tensor_CreateDyn(shape s, float c) 
 {
 	Tensor* v = (Tensor*)malloc(sizeof(Tensor));
@@ -138,7 +164,7 @@ shape T_Argmax(Tensor* t)
 float T_MinValue(Tensor* t) 
 {
 	float min_v = t->w[0];
-	for (size_t i = 1; i < t->n; ++i)
+	for (size_t i = 1; i < t->n; i++)
 	{
 		if (t->w[i] < min_v) min_v = t->w[i];
 	}
@@ -148,7 +174,7 @@ float T_MinValue(Tensor* t)
 float T_MaxValue(Tensor* t) 
 {
 	float max_v = t->w[0];
-	for (size_t i = 1; i < t->n; ++i)
+	for (size_t i = 1; i < t->n; i++)
 	{
 		if (t->w[i] > max_v) max_v = t->w[i];
 	}

@@ -28,17 +28,17 @@ typedef struct _Model
 Model Model_Create();
 Layer* Model_AddLayer(Model *n, Layer* l);
 
-void Backward_Layer (Layer* l, Tensor *y);
-Tensor *Forward_Layer(Layer* l, Tensor* x);
+void Backward_Layer (Layer* l);
+Tensor *Forward_Layer(Layer* l);
 
-Tensor* Seq_Forward(Model* n, Tensor* x);
-void Seq_Backward(Model* n, Tensor* y);
+void Model_Forward(Model* n);
+void Model_Backward(Model* n);
 
 cJSON* Layer_To_JSON(Layer* l);
 void Layer_Load_JSON(Layer* t, cJSON* node);
 cJSON* Model_To_JSON(Model *n);
 void Model_Load_JSON(Model *t, cJSON* node);
-
+dList Model_getGradients(Model* n);
 #ifdef __NVCC__
 Model Model_CreateGPU();
 Tensor* Forward_LayerGPU(Layer* l, Tensor* x);

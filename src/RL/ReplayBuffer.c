@@ -43,8 +43,8 @@ Sample* createSample(Tensor* state,
     }
     s->action = action;
     s->reward = reward;
-    s->state = Tensor_CreateCopy(state);
-    s->next_state = Tensor_CreateCopy(next_state);
+    //s->state = Tensor_CreateCopy(state);
+    //s->next_state = Tensor_CreateCopy(next_state);
     s->done = done;
     return s;
 }
