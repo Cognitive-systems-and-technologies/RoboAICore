@@ -7,10 +7,11 @@ extern "C" {
 
 #include "Tensor.h"
 #include "Interfaces.h"
+#include "dList.h"
 
 typedef struct Dense
 {
-	LayerActivation activation;
+	//LayerActivation activation;
 	Tensor *kernels;
 	Tensor biases;
 	int n;
@@ -25,6 +26,7 @@ void Dense_Free(Layer* l);
 
 cJSON* Dense_To_JSON(Dense* d);
 void Dense_Load_JSON(Dense* d, cJSON* node);
+void Dense_GetGrads(Dense* l, dList* grads);
 #ifdef __NVCC__
 Layer* Dense_CreateGPU(int num_neurons, Layer* in);
 __global__ void Dense_ForwardKernels(shape limit, float* x, float* k, float* out, shape s);

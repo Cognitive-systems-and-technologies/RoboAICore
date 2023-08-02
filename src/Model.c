@@ -6,8 +6,8 @@ Model Model_Create()
 	Model n;
 	n.Layers = NULL;
 	n.n_layers = 0;
-	n.NetForward = Seq_Forward;
-	n.NetBackward = Seq_Backward;
+	n.NetForward = NULL;
+	n.NetBackward = NULL;
 	return n;
 }
 
@@ -26,27 +26,29 @@ Layer* Model_AddLayer(Model* n, Layer* l)
 	return n->Layers[cnt - 1];
 }
 
-void Backward_Layer(Layer* l, Tensor* y) 
+void Backward_Layer(Layer* l) 
 {
 	switch (l->type)
 	{
 	case LT_DENSE: Dense_Backward(l); break;
-	case LT_SOFTMAX: break;
+	//case LT_SOFTMAX: break;
 	case LT_RELU: Relu_Backward(l); break;
-	case LT_REGRESSION: Regression_Backward(l, y); break;
-	case LT_MSE: MSE_Backward(l,y); break;
+	//case LT_REGRESSION: Regression_Backward(l, y); break;
+	//case LT_MSE: MSE_Backward(l,y); break;
+	case LT_CONV: Conv2d_Backward(l); break;
+	case LT_MAXPOOL: MaxPool2d_Backward(l); break;
 	case LT_TANHA: TanhA_Backward(l); break;
 	default:
 		break;
 	}
 }
 
-Tensor *Forward_Layer(Layer* l, Tensor* x)
+Tensor *Forward_Layer(Layer* l)
 {
 	Tensor* y = NULL;
 	switch (l->type)
 	{
-	case LT_INPUT: y = Input_Forward(l, x); break;
+	case LT_INPUT: y = Input_Forward(l); break;
 	case LT_DENSE: y = Dense_Forward(l); break;
 	case LT_SOFTMAX: break;
 	case LT_RELU: y = Relu_Forward(l); break;
@@ -58,36 +60,6 @@ Tensor *Forward_Layer(Layer* l, Tensor* x)
 	default: break;
 	}
 	return y;
-}
-
-Tensor* Seq_Forward(Model* n, Tensor* x)
-{
-	Tensor* y = Forward_Layer(n->Layers[0], x);
-	for (int i = 1; i < n->n_layers; i++)
-	{
-		y = Forward_Layer(n->Layers[i], y);
-	}
-	return y;
-}
-
-void Seq_Backward(Model* n, Tensor* y)
-{
-	int N = n->n_layers;
-	for (int i = N - 1; i >= 0; i--)
-	{
-		Layer* l = n->Layers[i];
-		switch (l->type)
-		{
-		case LT_DENSE: Dense_Backward(l); break;
-		case LT_SOFTMAX: break;
-		case LT_RELU: Relu_Backward(l); break;
-		case LT_REGRESSION: Regression_Backward(l, y); break;
-		case LT_MSE: MSE_Backward(l, y); break;
-		case LT_TANHA: TanhA_Backward(l); break;
-		case LT_CONV: Conv2d_Backward(l); break;
-		case LT_MAXPOOL: MaxPool2d_Backward(l); break;
-		}
-	}
 }
 
 void Layer_Load_JSON(Layer* t, cJSON* node)
@@ -172,4 +144,39 @@ void Model_Load_JSON(Model* t, cJSON* node)
 		Layer_Load_JSON(t->Layers[i], l);
 	}
 	*/
+}
+
+void Model_Forward(Model* n) 
+{
+	for (int i = 0; i < n->n_layers; i++)
+	{
+		Forward_Layer(n->Layers[i]);
+	}
+}
+
+void Model_Backward(Model* n) 
+{
+	int N = n->n_layers;
+	for (int i = N - 1; i >= 0; i--)
+	{
+		Layer* l = n->Layers[i];
+		Backward_Layer(l);
+	}
+}
+
+dList Model_getGradients(Model* n)
+{
+	dList grads = dList_create();
+	for (int i = 0; i < n->n_layers; i++)
+	{
+		Layer* l = n->Layers[i];
+		switch (l->type)
+		{
+		case LT_DENSE:
+			Dense_GetGrads((Dense*)l->aData, &grads);
+			break;
+		default: break;
+		}
+	}
+	return grads;
 }

@@ -61,6 +61,7 @@ void SGDOpt(Tensor* v, OptParams* par);
 
 OptParams OptParams_Create();
 void Optimize(Model*n, OptParams *par, Tensor *x, Tensor *y);
+void OptimizeModel(Model* n, OptParams* par);
 void Change_Grad(OptParams* par, Tensor* v, bool norm);
 
 #ifdef __NVCC__

@@ -12,7 +12,7 @@ extern "C" {
 #include <stdio.h>
 
 Layer *Input_Create(shape out_shape);
-Tensor *Input_Forward(Layer* l, Tensor* x);
+Tensor *Input_Forward(Layer* l);
 
 void Input_Free(Layer *l);
 #ifdef __NVCC__

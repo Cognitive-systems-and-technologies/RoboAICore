@@ -12,9 +12,11 @@ extern "C" {
 #include "Optimizer.h"
 #include "Tensor.h"
 #include "ReplayBuffer.h"
+#include "Losses.h"
 
 typedef struct RLBrain
 {
+	Layer* inp, *out;
 	ReplayBuffer *buffer;
 	Model net;
 	float discount;
@@ -24,10 +26,11 @@ typedef struct RLBrain
 }RLBrain;
 
 RLBrain *RLBrain_Create(shape state_shape, int n_outputs);
-Model RLBrain_CreateNet(shape input_sh, int n_outputs);
+//Model RLBrain_CreateNet(shape input_sh, int n_outputs);
 void RLBrain_Record(RLBrain *brain, Tensor* state, Tensor* next_state, int action, float reward, int done);
-Tensor* RLBrain_Forward(RLBrain *brain, Tensor *state);
+Tensor RLBrain_Forward(RLBrain *brain, Tensor *state);
 float RLBrain_Train(RLBrain *brain);
+float RLBrain_TrainTrace(RLBrain* brain, Tensor* states, float* rewards, float* actions, int n);
 
 #ifdef __cplusplus
 }

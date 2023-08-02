@@ -11,19 +11,21 @@ RLAgent *RLAgent_Create(shape state_shape, int n_outputs)
 	agent->brain = RLBrain_Create(state_shape, n_outputs);
 	agent->epsilon = 0.9f;
 	agent->phase = A_TRAIN;
+	agent->decay = 0.9999f;
 	return agent;
 }
 
 int RLAgent_Policy(RLAgent *agent, Tensor* s)
 {
-	Tensor* y = RLBrain_Forward(agent->brain, s);
-	shape max = T_Argmax(y);
+	Tensor y = RLBrain_Forward(agent->brain, s);
+	shape max = T_Argmax(&y);
 	int act = max.d;
 	return act;
 }
 
 int RLAgent_Act(RLAgent *agent, Tensor* s)
 {
+	agent->epsilon *= agent->decay;
 	if (rngFloat() <= agent->epsilon) {
 		int ra = rngInt(0, agent->brain->num_outputs-1);
 		return ra;

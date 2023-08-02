@@ -47,7 +47,9 @@ typedef struct Tensor
 }Tensor;
 
 Tensor Tensor_Create(shape s, float c);
+Tensor Tensor_FromData(shape s, const float *data);
 Tensor* Tensor_CreateDyn(shape s, float c);
+Tensor Tensor_CreateCopy(Tensor* t);
 void Tensor_CopyData(Tensor* dst, Tensor* src);
 int tIdx(shape s, int w, int h, int d);
 void Tensor_Xavier_Rand(float* w, int n);

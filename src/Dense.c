@@ -25,10 +25,10 @@ Layer* Dense_Create(int num_neurons, RandType weightInit, Layer* in)
 		ld->n = num_neurons;
 		ld->kernels = (Tensor*)malloc(sizeof(Tensor) * num_neurons);
 		if (ld->kernels) {
-			shape kernels_shape = { 1, 1, inn };//each row is weight
+			//shape kernels_shape = { 1, 1, inn };
 			for (size_t i = 0; i < num_neurons; i++)
 			{
-				ld->kernels[i] = Tensor_Create(kernels_shape, 0.f);
+				ld->kernels[i] = Tensor_Create(in->out_shape, 0.f);
 
 				switch (weightInit)
 				{
@@ -146,4 +146,15 @@ void Dense_Free(Layer* l)
 	free(data);
 	Tensor_Free(&l->output);
 	free(l);
+}
+
+void Dense_GetGrads(Dense* l, dList* grads)
+{
+	for (size_t i = 0; i < l->n; i++)
+	{
+		//add kernel
+		dList_push(grads, &l->kernels[i]);
+	}
+	//add bias
+	dList_push(grads, &l->biases);
 }

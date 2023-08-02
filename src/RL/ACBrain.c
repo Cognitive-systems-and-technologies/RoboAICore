@@ -1,52 +1,96 @@
 #include "ACBrain.h"
 
-ACBrain *ACBrain_Create(shape state_shape, int n_outputs)
+ACBrain* ACBrain_Create(shape state_shape, int n_outputs)
 {
-	ACBrain *brain = malloc(sizeof(ACBrain));
-	if(!brain)
+	ACBrain* brain = malloc(sizeof(ACBrain));
+	if (!brain)
 	{
 		return NULL;
 	}
-	brain->input_shape = (shape){state_shape.w, state_shape.h, state_shape.d};
+	brain->input_shape = (shape){ state_shape.w, state_shape.h, state_shape.d };
 	brain->num_outputs = n_outputs;
-	brain->net = ACBrain_CreateNet(brain->input_shape, brain->num_outputs);
-	//printf("Brain created");
-	brain->buffer = ReplayBuffer_Create(64, 64);
-	brain ->par = (OptParams){ 0.1f, 1.0f, 0.001f, 32, ADAGRAD, 1.0f };
-	brain->discount = 0.95f;
-	brain->critic_loss_weight = 0.5f;
-	brain->actor_loss_weight = 1.0f;
-	brain->entropy_loss_weight = 0.05f;
+	//brain->net = ACBrain_CreateNet(brain->input_shape, brain->num_outputs);
+	brain->gamma = 0.99f;
+	brain->discount = 0.01f;
+	//create net
+	brain->ActorNet = Model_Create();
+	brain->inpA = Model_AddLayer(&brain->ActorNet, Input_Create(brain->input_shape));
+	Layer* l = Model_AddLayer(&brain->ActorNet, Dense_Create(64, R_XAVIER, brain->inpA));
+	l = Model_AddLayer(&brain->ActorNet, Dense_Create(64, R_XAVIER, l));
+	brain->actor = Model_AddLayer(&brain->ActorNet, Dense_Create(n_outputs, R_XAVIER, l));
+
+	brain->CriticNet = Model_Create();
+	brain->inpC = Model_AddLayer(&brain->CriticNet, Input_Create(brain->input_shape));
+	Layer* l2 = Model_AddLayer(&brain->CriticNet, Dense_Create(64, R_XAVIER, brain->inpC));
+	l2 = Model_AddLayer(&brain->CriticNet, Dense_Create(64, R_XAVIER, l2));
+	brain->critic = Model_AddLayer(&brain->CriticNet, Dense_Create(1, R_XAVIER, l2));
+
+	brain->par = OptParams_Create();
+	brain->par.method = ADAN;
+	brain->par.learning_rate = 0.00001f;
+	brain->I = 1.f;
 	return brain;
 }
 
-void ACBrain_Record(ACBrain *brain, Tensor* state, Tensor* next_state, int action, float reward, int done)
+Tensor ACBrain_Forward(ACBrain* brain, Tensor* state)
 {
-	ReplayBuffer_Record(brain->buffer, state, next_state, action, reward, done);
+	brain->inpA->input = state;
+	Model_Forward(&brain->ActorNet);
+	Tensor prop = SoftmaxProb(&brain->actor->output);//need to be free() after use
+	return prop;
 }
 
-Tensor* ACBrain_Forward(ACBrain *brain, Tensor *state)
+float ACBrain_TrainTrace(ACBrain* brain, Tensor* states, float* rewards, float* actions, int n)
 {
-	Tensor *y = Seq_Forward(&brain->net, state, 0);
-	return y;
-}
+	float* adv_rewards = createFloatArray(n);
+	float discounted_sum = 0.f;
+	for (int i = n - 1; i >= 0; i--)
+	{
+		discounted_sum = rewards[i] + brain->gamma * discounted_sum;
+		adv_rewards[i] = discounted_sum;
+	}
+	//NormalizeArray(adv_rewards, n);
 
-Model ACBrain_CreateNet(shape input_sh, int n_outputs)
-{
-	Model n = Model_Create();
-	Layer* l = Model_AddLayer(&n, Input_Create(input_sh));
-	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
-	l = Model_AddLayer(&n, Dense_Create(16, R_XAVIER, l));
+	float total_actor_loss = 0;
+	float total_critic_loss = 0;
+	for (int i = 0; i < n; i++)
+	{
+		//setup critic
+		brain->inpC->input = &states[i];
+		Model_Forward(&brain->CriticNet);
+		float critic_value = brain->critic->output.w[0];
+		float advantage = adv_rewards[i] - critic_value;
+		Tensor critic_true = Tensor_Create((shape) { 1, 1, 1 }, adv_rewards[i]);
+		float critic_loss = MSE_Loss(&brain->critic->output, &critic_true);
+		total_critic_loss += critic_loss;
+		Tensor_Free(&critic_true);
+		Model_Backward(&brain->CriticNet);
+		OptimizeModel(&brain->CriticNet, &brain->par);
 
-	Layer *actor = Model_AddLayer(&n, Dense_Create(n_outputs, R_XAVIER, l));
-	actor = Model_AddLayer(&n, Regression_Create(actor));
+		//setup actor
+		brain->inpA->input = &states[i];
+		Model_Forward(&brain->ActorNet);
+		float actor_loss = Cross_entropy_Loss(&brain->actor->output, actions[i]);
+		total_actor_loss += actor_loss;
 
-	Layer *critic = Model_AddLayer(&n, Dense_Create(1, R_XAVIER, l));
-	critic = Model_AddLayer(&n, Regression_Create(critic));
-	return n;
-}
-float ACBrain_Train(ACBrain *brain)
-{
-	//todo fix code
+		Tensor prop = SoftmaxProb(&brain->actor->output);
+		for (size_t j = 0; j < brain->actor->output.n; j++)
+		{
+			//float y_true = (j == (int)actions[i]) ? 1.f : 0.f;
+			//float der = -(y_true - prop.w[j]);
+			//brain->actor->output.dw[j] = brain->discount * advantage * der;
+			brain->actor->output.dw[j] *= advantage*brain->I;
+		}
+		Tensor_Free(&prop);
+		Model_Backward(&brain->ActorNet);
+		//==================
+		OptimizeModel(&brain->ActorNet, &brain->par);
+		//brain->I *= 0.9999f;
+	}
+	total_actor_loss /= n;
+	total_critic_loss /= n;
+
+	printf("actor_loss: %f, critic_loss: %f\n", total_actor_loss, total_critic_loss);
+	free(adv_rewards);
 	return -1.f;
 }

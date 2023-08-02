@@ -23,6 +23,7 @@ typedef struct RLAgent
 	RLBrain *brain;
 	Tensor state;
 	float epsilon;
+	float decay;
 	AgentPhase phase;
 }RLAgent;
 

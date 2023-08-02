@@ -265,3 +265,42 @@ void Optimize(Model* n, OptParams* par, Tensor* x, Tensor* y)
 		}
 	}
 }
+
+void OptimizeModel(Model* n, OptParams* par)
+{
+	par->counter++;
+	//apply gradients
+	for (int i = 0; i < n->n_layers; i++)
+	{
+		switch (n->Layers[i]->type)
+		{
+		case LT_DENSE: {
+			Dense* data = (Dense*)n->Layers[i]->aData;
+			for (size_t i = 0; i < data->biases.n; i++)
+			{
+				Change_Grad(par, &data->kernels[i], false);
+			}
+			Change_Grad(par, &data->biases, false);
+
+			Tensor* out = &n->Layers[i]->output;
+			memset(out->dw, 0, sizeof(float) * out->n);
+		}break;
+		case LT_CONV: {
+			Conv2d* data = (Conv2d*)n->Layers[i]->aData;
+			for (size_t i = 0; i < data->biases.n; i++)
+			{
+				Change_Grad(par, &data->kernels[i], false);
+			}
+			Change_Grad(par, &data->biases, false);
+
+			Tensor* out = &n->Layers[i]->output;
+			memset(out->dw, 0, sizeof(float) * out->n);
+		}break;
+		default: {
+			Tensor* out = &n->Layers[i]->output;
+			memset(out->dw, 0, sizeof(float) * out->n);
+		}
+			   break;
+		}
+	}
+}
