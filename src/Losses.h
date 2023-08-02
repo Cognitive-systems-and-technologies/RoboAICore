@@ -11,7 +11,7 @@ extern "C" {
 #include <stdio.h>
 
 	float MSE_Loss(Tensor *y, Tensor *y_true);
-	Tensor SoftmaxProp(Tensor* t);
+	Tensor SoftmaxProb(Tensor* t);
 	float Cross_entropy_Loss(Tensor* y, int idx);
 	float Regression_Loss(Tensor* y, int idx, float val);
 #ifdef __NVCC__

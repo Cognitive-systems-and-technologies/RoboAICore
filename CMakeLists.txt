@@ -124,6 +124,9 @@ target_link_libraries(model_test PUBLIC RAICore)
 add_executable(opt_test src/cmd/opt_test.cpp)
 target_link_libraries(opt_test PUBLIC RAICore)
 
+add_executable(mult_opt_test src/cmd/mult_opt_test.cpp)
+target_link_libraries(mult_opt_test PUBLIC RAICore)
+
 #set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 #set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 #include(CPack)

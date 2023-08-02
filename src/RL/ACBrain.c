@@ -36,7 +36,7 @@ Tensor ACBrain_Forward(ACBrain* brain, Tensor* state)
 {
 	brain->inpA->input = state;
 	Model_Forward(&brain->ActorNet);
-	Tensor prop = SoftmaxProp(&brain->actor->output);//need to be free() after use
+	Tensor prop = SoftmaxProb(&brain->actor->output);//need to be free() after use
 	return prop;
 }
 
@@ -73,7 +73,7 @@ float ACBrain_TrainTrace(ACBrain* brain, Tensor* states, float* rewards, float* 
 		float actor_loss = Cross_entropy_Loss(&brain->actor->output, actions[i]);
 		total_actor_loss += actor_loss;
 
-		Tensor prop = SoftmaxProp(&brain->actor->output);
+		Tensor prop = SoftmaxProb(&brain->actor->output);
 		for (size_t j = 0; j < brain->actor->output.n; j++)
 		{
 			//float y_true = (j == (int)actions[i]) ? 1.f : 0.f;

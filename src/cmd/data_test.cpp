@@ -10,7 +10,7 @@ void TensorTest()
 	Tensor t = Tensor_Create({ 5, 5, 1 }, 1.f);
 	Tensor_Xavier_Rand(t.w, t.n);
 
-	Tensor sm = SoftmaxProp(&t);
+	Tensor sm = SoftmaxProb(&t);
 	Tensor_Print(&sm);
 	
 	Tensor_Free(&sm);

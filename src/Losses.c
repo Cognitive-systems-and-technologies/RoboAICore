@@ -15,7 +15,7 @@ float MSE_Loss(Tensor* y, Tensor* y_true)
 	return loss;
 }
 
-Tensor SoftmaxProp(Tensor *t) 
+Tensor SoftmaxProb(Tensor *t) 
 {
 	Tensor out = Tensor_Create(t->s, 0);
 	//get max
@@ -38,14 +38,14 @@ Tensor SoftmaxProp(Tensor *t)
 
 float Cross_entropy_Loss(Tensor* y, int idx) 
 {
-	Tensor x = SoftmaxProp(y);
+	Tensor x = SoftmaxProb(y);
 	for (size_t i = 0; i < y->n; i++)
 	{
 		float y_true = (i == idx) ? 1.f : 0.f;
 		float der = -(y_true - x.w[i]);
 		y->dw[i] += der;
 	}
-	float loss = -(float)log(x.w[idx]);
+	float loss = -logf(x.w[idx]);
 	Tensor_Free(&x);
 	return loss;
 }

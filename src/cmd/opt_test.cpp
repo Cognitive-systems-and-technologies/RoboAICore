@@ -49,13 +49,13 @@ int main()
 
 	inp->input = &x1;
 	Model_Forward(&n);
-	Tensor o1 = SoftmaxProp(&out->output);
+	Tensor o1 = SoftmaxProb(&out->output);
 	PrintArray(o1.w, o1.n);
 	Tensor_Free(&o1);
 
 	inp->input = &x2;
 	Model_Forward(&n);
-	Tensor o2 = SoftmaxProp(&out->output);
+	Tensor o2 = SoftmaxProb(&out->output);
 	PrintArray(o2.w, o2.n);
 	Tensor_Free(&o2);
 

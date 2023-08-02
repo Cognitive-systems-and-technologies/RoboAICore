@@ -41,6 +41,7 @@ Tensor RLBrain_Forward(RLBrain *brain, Tensor *state)
 
 float RLBrain_Train(RLBrain *brain)
 {
+	/*
 	if (brain->buffer->buffer->length >= brain->buffer->batch_size) {
 		float cur_loss = 0.0f;
 		for (int i = brain->buffer->buffer->length-(int)1; i > 0; i--)
@@ -52,7 +53,7 @@ float RLBrain_Train(RLBrain *brain)
 				y.w[1] = s->reward;
 			else 
 			{
-				Tensor* next = brain->net.NetForward(&brain->net, s->next_state, 0);
+				Tensor* next = brain->net.NetForward(&brain->net, s->next_state);
 				float Q_sa = T_MaxValue(next);
 				y.w[1] = s->reward + brain->discount * Q_sa;
 			}
@@ -64,6 +65,7 @@ float RLBrain_Train(RLBrain *brain)
 		float loss = cur_loss / brain->buffer->batch_size;
 		return loss;
 	}
+	*/
 	return -1.f;
 }
 
