@@ -28,3 +28,6 @@
 ![Cmake config2](images/cmake_config2.png)
 - в окне Visual Studio выберите тип компиляции и в меню "Build"->"Rebuild solution"
 ![Cmake config](images/build.png)
+
+## Ресурсы:
+- Описание функций библиотеки [RoboAICore API](https://github.com/Cognitive-systems-and-technologies/materials/blob/main/RAI_API.pdf).
