@@ -31,7 +31,7 @@ Layer* Conv2d_CreateGPU(int num_kernels, shape2 k_size, shape2 stride, int pad, 
 		ld->k_size.w = k_size.w; ld->k_size.h = k_size.h;
 
 		shape4 ks = { k_size.w, k_size.h, in->out_shape.d, num_kernels };
-		ld->kernels = Tensor4_CreateGPU(ks, 1.f); //assume that n input channels = 1 for now
+		ld->kernels = Tensor4_CreateGPU(ks, 1.f);
 		Tensor_Xavier_RandGPU(ld->kernels.w, ld->kernels.n);
 			
 		ld->biases = Tensor_CreateGPU({ 1, 1, num_kernels }, bias);

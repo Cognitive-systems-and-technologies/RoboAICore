@@ -6,6 +6,13 @@
 #include <curand_kernel.h>
 
 #ifdef __NVCC__
+Tensor Tensor_FromDataGPU(shape s, const float* data) 
+{
+	Tensor t = Tensor_CreateGPU(s, 0.f);
+	cudaMemcpy(t.w, data, sizeof(float)*t.n, cudaMemcpyHostToDevice);
+	return t;
+}
+
 __global__ void Tensor_FillKernel(int limit, float *w, float v) 
 {
 	int i = (blockIdx.x * blockDim.x) + threadIdx.x;

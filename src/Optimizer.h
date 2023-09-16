@@ -7,6 +7,7 @@ extern "C" {
 
 #include "Model.h"
 #include <string.h> 
+#include "Utils.h"
 
 typedef enum OptMethod {
 	ADAGRAD,
@@ -65,13 +66,16 @@ void OptimizeModel(Model* n, OptParams* par);
 void Change_Grad(OptParams* par, Tensor* v, bool norm);
 
 #ifdef __NVCC__
-__global__ void NRMSProp_GradKernel(shape limit, float* w, float* dw, float* vt, float* bw, float* bdw, float* bvt, float lr, shape s);
+void CreateAdanDataGPU(Tensor* t);
+void CreateAdamDataGPU(Tensor* t);
+void CreateMomentumDataGPU(Tensor* t);
+void PrepareTDataGPU(Model* n, OptParams* par);
+void PrepareTensorGPU(Tensor* v, OptParams* par);
+void Change_GradGPU(OptParams* par, Tensor* k, Tensor* b, bool norm);
+void OptimizeModelGPU(Model* n, OptParams* par);
+
+__global__ void NRMSProp_GradKernel(float* w, float* dw, float* vt, float* bw, float* bdw, float* bvt, float lr, shape s);
 __global__ void Change_GradKernel(float* w, float* dw, float* vt, float lr, shape s);
-void OptimizeGPU(Model* n, OptParams* par, Tensor* x, Tensor* y);
-__global__ void Adagrad_GradKernelLinear(int limit, float* w, float* dw, float* vt, float* bw, float* bdw, float* bvt, int bn, float lr);
-__global__ void RMSProp_GradKernelLinear(int limit, float* w, float* dw, float* vt, float* bw, float* bdw, float* bvt, int bn, float lr);
-__global__ void NRMSProp_GradKernelLinear(int limit, float* w, float* dw, float* vt, float* bw, float* bdw, float* bvt, int bn, float lr);
-void RunForTensor(float* w, float* dw, float* vt, int n, float* bw, float* bdw, float* bvt, int bn, float lr);
 #endif // __NVCC__
 
 #ifdef __cplusplus

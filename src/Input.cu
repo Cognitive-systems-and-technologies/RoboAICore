@@ -19,9 +19,9 @@ Layer* Input_CreateGPU(shape out_shape)
 	return dl;
 }
 
-Tensor* Input_ForwardGPU(Layer* l, Tensor* x) 
+Tensor* Input_ForwardGPU(Layer* l) 
 {
-	Tensor_CopyDataGPU(&l->output, x);
+	Tensor_CopyDataGPU(&l->output, l->input);
 	return &l->output;
 }
 #endif // __NVCC__

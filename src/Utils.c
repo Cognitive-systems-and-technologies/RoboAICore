@@ -55,6 +55,8 @@ void FlipArray(float* w, int n)
 	}
 }
 
+//Doesnt support by microcontroller
+/*
 void WriteToFile(const char* txt, const char* file)
 {
 	FILE* fptr;
@@ -88,6 +90,7 @@ char* LoadFile(const char* filename)
 
 	return text;
 }
+*/
 
 void PrintArray(float* w, int n)
 {

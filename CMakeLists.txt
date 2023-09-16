@@ -1,8 +1,13 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.17.0)
 project(RAI VERSION 0.1.0)
 
 include(CTest)
 enable_testing()
+
+option (RAI_CUDA "Use cuda compilation" OFF)
+if(RAI_CUDA)
+	set (GPU_COMPUTE_CAPABILITY "60" CACHE STRING "")
+endif()
 
 SET (RL_SOURCE 
 src/RL/ReplayBuffer.c
@@ -66,6 +71,22 @@ src/cJSON.c
 src/cJSON_Utils.c
 )
 
+SET (LIB_CUDA_SOURCE 
+  src/Input.cu
+  src/Conv2d.cu
+  src/Dense.cu
+  src/MaxPool2d.cu
+  src/Model.cu
+  src/Relu.cu
+  src/TanhA.cu
+  src/Tensor.cu
+  src/Tensor4.cu
+  src/MSE.cu
+  src/Optimizer.cu
+  src/Utils.cu
+  src/Losses.cu
+)
+
 SET (LIB_SOURCE_HEADERS 
 src/Losses.h
 src/Tensor.h
@@ -106,6 +127,24 @@ ${RL_SOURCE}
 ${RL_SOURCE_HEADERS}
 )
 
+if (RAI_CUDA)
+  add_library(RAICoreGPU STATIC 
+  ${LIB_SOURCE} 
+  ${LIB_SOURCE_HEADERS}
+  ${LIB_CUDA_SOURCE}
+
+  ${GEO_SOURCE} 
+  ${GEO_SOURCE_HEADERS}
+
+  ${RL_SOURCE} 
+  ${RL_SOURCE_HEADERS}
+  )
+  set_target_properties(RAICoreGPU PROPERTIES CUDA_ARCHITECTURES ${GPU_COMPUTE_CAPABILITY})
+  target_include_directories (RAICoreGPU PUBLIC
+  src
+  )
+endif()
+
 #TODO: CUDA COMPILATION
 
 target_include_directories (RAICore PUBLIC
@@ -126,6 +165,20 @@ target_link_libraries(opt_test PUBLIC RAICore)
 
 add_executable(mult_opt_test src/cmd/mult_opt_test.cpp)
 target_link_libraries(mult_opt_test PUBLIC RAICore)
+
+if (RAI_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+    find_package(CUDAToolkit)
+    add_executable(cuda_test src/cmd/cuda_test.cu)
+    target_link_libraries(cuda_test PUBLIC RAICoreGPU CUDA::cudart CUDA::cuda_driver)
+    set_target_properties(cuda_test PROPERTIES CUDA_ARCHITECTURES ${GPU_COMPUTE_CAPABILITY})
+  else()
+    message(STATUS "No CUDA compiler found")
+  endif()
+endif ()
 
 #set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 #set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

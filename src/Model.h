@@ -41,8 +41,10 @@ void Model_Load_JSON(Model *t, cJSON* node);
 dList Model_getGradients(Model* n);
 #ifdef __NVCC__
 Model Model_CreateGPU();
-Tensor* Forward_LayerGPU(Layer* l, Tensor* x);
-void Backward_LayerGPU(Layer* l, Tensor* y);
+Tensor* Forward_LayerGPU(Layer* l);
+void Backward_LayerGPU(Layer* l);
+void Model_ForwardGPU(Model* n);
+void Model_BackwardGPU(Model* n);
 Tensor* Seq_ForwardGPU(Model* n, Tensor* x);
 void Seq_BackwardGPU(Model* n, Tensor* y);
 #endif // __NVCC__

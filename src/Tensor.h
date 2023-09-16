@@ -59,6 +59,7 @@ __global__ void Tensor_FillKernel(int limit, float* w, float v);
 void Tensor_FillGPU(Tensor* v, float c);
 void Tensor_FillArrayGPU(float* v, int n, float c);
 Tensor Tensor_CreateGPU(shape s, float c);
+Tensor Tensor_FromDataGPU(shape s, const float* data);
 void Tensor_FreeGPU(Tensor* v);
 void Tensor_CopyDataGPU(Tensor* dst, Tensor* src);
 __global__ void xavier_rand_kernel(void* globalState, float* w, int n);

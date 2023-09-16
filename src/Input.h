@@ -17,7 +17,7 @@ Tensor *Input_Forward(Layer* l);
 void Input_Free(Layer *l);
 #ifdef __NVCC__
 Layer* Input_CreateGPU(shape out_shape);
-Tensor* Input_ForwardGPU(Layer* l, Tensor* x);
+Tensor* Input_ForwardGPU(Layer* l);
 #endif // __NVCC__
 
 #ifdef __cplusplus

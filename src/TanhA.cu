@@ -17,6 +17,7 @@ Layer* TanhA_CreateGPU(Layer* in)
 	dl->output = Tensor_CreateGPU(dl->out_shape, 0);
 	dl->input = &in->output;
 	dl->aData = NULL;
+	printf("Tanh GPU, output shape: [%d, %d, %d]\n", dl->out_shape.w, dl->out_shape.h, dl->out_shape.d);
 	return dl;
 }
 
