@@ -119,5 +119,26 @@ https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/10098139
 - model_test.cpp - пример создания глубокой модели нейросети (по типу AlexNet) на CPU,
 - data_test.cpp - пример работы с данными и функциями слоев.
 
+Далее представлен процесс компиляции для [stm32f407](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) в среде CooCox CoIDE:
+
+Настройка среды и проекта:
+- Загрузите и установите набор пакетов программ, необходимых для компиляции и генерации выполняемого кода - Arm GNU Toolchain:
+```
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+```
+- В среде CooCox CoIDE выполните команды Project -> Select toolchain path
+- В появившемся окне укажите путь к папке bin установленного Arm GNU Toolchain
+- Создайте новый проект и выберите тип платы или чипа
+- После завершения настройки проекта выберите набор периферии с которой хотите работать, добавте компонент стандартных библиотек C
+- В настройках проекта Configuration включите поддержку FPU и в категории Link выберите Use base C library
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/ca13f750-7fe4-4272-8e4a-f365609648aa
+
+Пример компиляции проекта и тест на stm32f407:
+- Создайте новую группу (Add Group) в проекте и добавте в нее файлы библиотеки
+- Выберите Project -> Rebuild
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/00fb1472-2094-40c8-a01c-5f9e6629c42d
+
 ## Ресурсы:
 - Описание функций библиотеки [RoboAICore API](https://github.com/Cognitive-systems-and-technologies/materials/blob/main/RAI_API.pdf).
