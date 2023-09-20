@@ -1,6 +1,6 @@
 #include "Model.h"
 #include <stdlib.h>
-
+//Создает объект Model с параметрами по умолчанию. Необходимо вызвать данную функцию для инициализации модели.
 Model Model_Create() 
 {
 	Model n;
@@ -10,7 +10,7 @@ Model Model_Create()
 	n.NetBackward = NULL;
 	return n;
 }
-
+//Добавляет новый слой l в массив Layers модели n и возвращает его адрес.
 Layer* Model_AddLayer(Model* n, Layer* l)
 {
 	int cnt = n->n_layers + 1;
@@ -25,7 +25,7 @@ Layer* Model_AddLayer(Model* n, Layer* l)
 	n->Layers[cnt - 1] = l;
 	return n->Layers[cnt - 1];
 }
-
+//Общая функция для вызова операции обратного прохода слоя. Вызывает backward функцию соответствующего слоя в зависимости от его типа
 void Backward_Layer(Layer* l) 
 {
 	switch (l->type)
@@ -42,7 +42,7 @@ void Backward_Layer(Layer* l)
 		break;
 	}
 }
-
+//Общая функция для вызова операции прямого прохода слоя. Вызывает forward функцию соответствующего слоя в зависимости от его типа.
 Tensor *Forward_Layer(Layer* l)
 {
 	Tensor* y = NULL;
@@ -61,7 +61,7 @@ Tensor *Forward_Layer(Layer* l)
 	}
 	return y;
 }
-
+//Загрузка данных из cJSON объекта node в слой t
 void Layer_Load_JSON(Layer* t, cJSON* node)
 {
 	cJSON* output_shape = cJSON_GetObjectItem(node, "os"); //shape
@@ -85,7 +85,7 @@ void Layer_Load_JSON(Layer* t, cJSON* node)
 			break;
 		}
 }
-
+//Конвертирование данных из слоя l в cJSON объект
 cJSON* Layer_To_JSON(Layer* l)
 {
 	cJSON* Layer = cJSON_CreateObject();
@@ -109,7 +109,7 @@ cJSON* Layer_To_JSON(Layer* l)
 	}
 	return Layer;
 }
-
+//Конвертирование данных из модели n в cJSON объект
 cJSON* Model_To_JSON(Model* n)
 {
 	cJSON* jNet = cJSON_CreateObject();
@@ -123,7 +123,7 @@ cJSON* Model_To_JSON(Model* n)
 	cJSON_AddItemToObject(jNet, "Layers", jLayers);
 	return jNet;
 }
-
+//Загрузка данных из cJSON объекта node в модель t
 void Model_Load_JSON(Model* t, cJSON* node)
 {
 	cJSON* Layers = cJSON_GetObjectItem(node, "Layers"); //Layers
@@ -145,7 +145,7 @@ void Model_Load_JSON(Model* t, cJSON* node)
 	}
 	*/
 }
-
+//Функция прямого прохода всех слоев в модели n. 
 void Model_Forward(Model* n) 
 {
 	for (int i = 0; i < n->n_layers; i++)
@@ -153,7 +153,7 @@ void Model_Forward(Model* n)
 		Forward_Layer(n->Layers[i]);
 	}
 }
-
+//Функция обратного прохода всех слоев в модели n. 
 void Model_Backward(Model* n) 
 {
 	int N = n->n_layers;
@@ -163,7 +163,7 @@ void Model_Backward(Model* n)
 		Backward_Layer(l);
 	}
 }
-
+//Функция возвращает динамический список из тензоров для обучения
 dList Model_getGradients(Model* n)
 {
 	dList grads = dList_create();

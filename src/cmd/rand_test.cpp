@@ -1,5 +1,5 @@
 #include "Model.h"
-
+//пример работы алгоритмов для инициализации весовых коэффициентов
 void WeightsInitTest()
 {
 	int count = 10000;

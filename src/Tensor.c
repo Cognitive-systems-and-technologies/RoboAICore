@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+//Создает тензор размерностью shape s и заполняет элементы массива значением c.
 Tensor Tensor_Create(shape s, float c)
 {
 	Tensor v;
@@ -29,14 +29,14 @@ Tensor Tensor_Create(shape s, float c)
 		}
 	return v;
 }
-
+//Создание тензора из массива data и размерностью shape s
 Tensor Tensor_FromData(shape s, const float* data) 
 {
 	Tensor t = Tensor_Create(s, 0.f);
 	memcpy(t.w, data, sizeof(float) * t.n);
 	return t;
 }
-
+//Создает копию тензора t
 Tensor Tensor_CreateCopy(Tensor* t)
 {
 	Tensor v;
@@ -55,7 +55,7 @@ Tensor Tensor_CreateCopy(Tensor* t)
 	}
 	return v;
 }
-
+//Создает тензор с динамическим выделением памяти размерностью shape s и заполняет элементы массива значением c.
 Tensor* Tensor_CreateDyn(shape s, float c) 
 {
 	Tensor* v = (Tensor*)malloc(sizeof(Tensor));
@@ -82,12 +82,12 @@ Tensor* Tensor_CreateDyn(shape s, float c)
 		}
 	return v;
 }
-
+//Копирует элементы из тензора src в тензор dst.
 void Tensor_CopyData(Tensor* dst, Tensor* src)
 {
 	memcpy(dst->w, src->w, sizeof(float) * src->n);
 }
-
+//Функция очистки динамической памяти, выделяемой для тензора v.
 void Tensor_Free(Tensor* v)
 {
 	free(v->dw);
@@ -95,7 +95,7 @@ void Tensor_Free(Tensor* v)
 	free(v->w);
 	v->w = NULL;
 }
-
+//Заполняет элементы массива w с количеством элементов n случайными значениями по непрерывному равномерному распределению.
 void Tensor_Xavier_Rand(float *w, int n) 
 {
 	for (int i = 0; i < n; i++)
@@ -104,6 +104,7 @@ void Tensor_Xavier_Rand(float *w, int n)
 		w[i] = v;
 	}
 }
+//Заполняет элементы массива w с количеством элементов n случайными значениями по непрерывному равномерному распределению. Случайное число с гауссовым распределением вероятностей (G)
 void Tensor_He_Rand(float* w, int n)
 {
 	for (int i = 0; i < n; i++)
@@ -113,24 +114,24 @@ void Tensor_He_Rand(float* w, int n)
 	}
 }
 //============================================================================================
-
+//Возвращает значение, хранящееся в тензоре под индексами w, h, d.
 float Tensor_Get(Tensor *vol, int x, int y, int d)
 {
 	int ix = (vol->s.w * y + x) * vol->s.d + d;
 	return vol->w[ix];
 }
-
+//Возвращает индекс в одномерном массиве по трехмерной форме, где sразмерность тензора, w,h,d – индексы требуемого элементы по ширине высоте и глубине.
 int tIdx(shape s, int w, int h, int d) 
 {
 	return ((s.w * h) + w) * s.d + d;
 }
-
+//Устанавливает значение, хранящееся в тензоре под индексами w, h, d в значение v.
 void Tensor_Set(Tensor *vol, int w, int h, int d, float v)
 {
 	int ix = ((vol->s.w * h) + w) * vol->s.d + d;
 	vol->w[ix] = v;
 }
-
+//Копирует массив значений из тензора src в тензор dst.
 void Tensor_Copy(Tensor* dst, Tensor* src) 
 {
 	memcpy(dst->w, src->w, sizeof(float) * src->n);
@@ -138,7 +139,7 @@ void Tensor_Copy(Tensor* dst, Tensor* src)
 	//if (src->vt!=NULL&&dst->vt!=NULL)
 		//memcpy(dst->w, src->w, sizeof(float) * src->n);
 }
-
+//Возвращает индексы элемента с максимальным значением в тензоре t. Возвращаемые индексы передаются в виде вектора shape.
 shape T_Argmax(Tensor* t) 
 {
 	shape idx = {0,0,0};
@@ -160,7 +161,7 @@ shape T_Argmax(Tensor* t)
 	}
 	return idx;
 }
-
+//Возвращает минимальное из всех значений элементов в тензоре t.
 float T_MinValue(Tensor* t) 
 {
 	float min_v = t->w[0];
@@ -170,7 +171,7 @@ float T_MinValue(Tensor* t)
 	}
 	return min_v;
 }
-
+//Возвращает максимальное из всех значений элементов в тензоре t
 float T_MaxValue(Tensor* t) 
 {
 	float max_v = t->w[0];
@@ -180,7 +181,7 @@ float T_MaxValue(Tensor* t)
 	}
 	return max_v;
 }
-
+//Возвращает среднее значение всех элементов в тензоре t.
 float T_Mean(Tensor* t) 
 {
 	float sum = 0;
@@ -190,14 +191,14 @@ float T_Mean(Tensor* t)
 	}
 	return sum / t->n;
 }
-
+//Конвертирует shape s в cJSON объект формата json
 cJSON* Shape_To_JSON(shape s)
 {
 	const int sh[3] = { s.w, s.h, s.d };
 	cJSON* arr = cJSON_CreateIntArray(sh, 3);
 	return arr;
 }
-
+//Конвертирует тензор v в cJSON объект формата json
 cJSON* Tensor_To_JSON(Tensor* v)
 {
 	cJSON* fld = cJSON_CreateObject();
@@ -206,7 +207,7 @@ cJSON* Tensor_To_JSON(Tensor* v)
 	cJSON_AddItemToObject(fld, "w", w);
 	return fld;
 }
-
+//Загружает данные из cJSON объекта node в тензор t.
 void Tensor_Load_JSON(Tensor* t, cJSON* node)
 {
 	cJSON* shp = cJSON_GetObjectItem(node, "s");
@@ -221,7 +222,7 @@ void Tensor_Load_JSON(Tensor* t, cJSON* node)
 		i++;
 	}
 }
-
+////Вывод тензора на консоль
 void Tensor_Print(Tensor* x)
 {
 	for (size_t d = 0; d < x->s.d; d++)
