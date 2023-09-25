@@ -136,6 +136,7 @@ https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/10098139
 
 Пример компиляции проекта и тест на stm32f407:
 - Создайте новую группу (Add Group) в проекте и добавте в нее файлы библиотеки
+- Для комфортной работы с данными, можно увеличить размер стека с 512байт (по умолчанию) до, например, 32Кб. Для этого в файле проекта cmsis_boot/startup/startup_stm32f4xx.c необходимо изменить значение STACK_SIZE на 0x00007D00 (#define STACK_SIZE 0x00007D00)
 - Выберите Project -> Rebuild
 
 https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/00fb1472-2094-40c8-a01c-5f9e6629c42d
