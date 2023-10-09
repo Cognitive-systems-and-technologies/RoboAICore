@@ -1,0 +1,6 @@
+[submodule "ext/glfw"]
+	path = ext/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "ext/box2d"]
+	path = ext/box2d
+	url = https://github.com/erincatto/box2d.git

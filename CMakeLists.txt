@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.17.0)
-project(RAI VERSION 0.1.0)
+project(RAI VERSION 0.1.1)
 
 include(CTest)
 enable_testing()
 
 option (RAI_CUDA "Use cuda compilation" OFF)
+option (RAI_BUILD_ENVS "Build environments examples" ON)
 if(RAI_CUDA)
 	set (GPU_COMPUTE_CAPABILITY "60" CACHE STRING "")
 endif()
@@ -178,6 +179,43 @@ if (RAI_CUDA)
   else()
     message(STATUS "No CUDA compiler found")
   endif()
+endif ()
+
+if(RAI_BUILD_ENVS)
+    add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/ext)
+    ###############################
+    #qmaze example
+    add_executable(qmaze src/cmd/qmaze/qmaze.cpp 
+    src/cmd/qmaze/agent.h 
+    src/cmd/qmaze/cell.h 
+    src/cmd/qmaze/grid.h 
+    src/cmd/qmaze/quad.h)
+
+    target_link_libraries(qmaze PUBLIC RAICore glfw glad)
+    target_include_directories (qmaze PUBLIC
+      src
+      src/cmd/qmaze
+      ${GLFW_DEPS}
+      ${GLFW_INCLUDE}
+      ${GLAD_INCLUDE}
+    )
+
+    ###############################
+    #cartpole example
+    add_executable(cartpole src/cmd/cartpole/cartpole.cpp 
+    src/cmd/cartpole/shapes.h
+    src/cmd/cartpole/cart.h
+    src/cmd/cartpole/agent.h)
+
+    target_link_libraries(cartpole PUBLIC RAICore glfw glad box2d)
+    target_include_directories (cartpole PUBLIC
+      src
+      src/cmd/cartpole
+      ${GLFW_DEPS}
+      ${GLFW_INCLUDE}
+      ${GLAD_INCLUDE}
+      ${BOX2D_INCLUDE}
+    )
 endif ()
 
 #set(CPACK_PROJECT_NAME ${PROJECT_NAME})
