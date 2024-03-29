@@ -67,18 +67,10 @@ public:
 
     int Act(Tensor* s)
     {
-        epsilon *= 0.99999f;
-        if (rngFloat() <= epsilon) {
-            int ra = rngInt(0, n_actions - 1);
-            return ra;
-        }
-        else {
-            Tensor t = ACBrain_Forward(brain, s);
-            shape max = T_Argmax(&t);
-            int act = max.d;
-            Tensor_Free(&t);
-            return act;
-        }
+        Tensor prob = ACBrain_Forward(brain, s);
+        int act = rng_by_prob(prob.w, prob.n);
+        Tensor_Free(&prob);
+        return act;
     }
 
     float GetReward()
