@@ -16,6 +16,7 @@ float InvLerp(float a, float b, float t);
 float rngFloat();
 int rngInt(int min, int max);
 float rngNormal();
+int rng_by_prob(float* prob, int n);
 
 void InsertionSort(float* values, int n);
 float Mean(float* items, int n);
