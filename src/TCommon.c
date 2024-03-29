@@ -47,6 +47,22 @@ float rngNormal() {
     return u * c;
 }
 
+int rng_by_prob(float* prob, int n)
+{
+    int* prefix = createIntArray(n);
+    if (prefix != NULL)
+    {
+        prefix[0] = (int)(prob[0] * 100.f);
+        for (int i = 1; i < n; ++i)
+            prefix[i] = prefix[i - 1] + (int)(prob[i] * 100.f);
+        int r = (rand() % prefix[n - 1]) + 1;
+        int indexc = find_ceil(prefix, r, 0, n - 1);
+        free(prefix);
+        return indexc;
+    }
+    return 0;
+}
+
 float Derivative(float (*f)(float), float x0)
 {
     const float delta = 1.0e-6; //small offset
