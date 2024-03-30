@@ -47,6 +47,19 @@ float rngNormal() {
     return u * c;
 }
 
+//from:
+//https://www.geeksforgeeks.org/random-number-generator-in-arbitrary-probability-distribution-fashion/
+int find_ceil(int* arr, int r, int l, int h)
+{
+    int mid = 0;
+    while (l < h)
+    {
+        mid = l + ((h - l) >> 1);
+        (r > arr[mid]) ? (l = mid + 1) : (h = mid);
+    }
+    return (arr[l] >= r) ? l : -1;
+}
+
 int rng_by_prob(float* prob, int n)
 {
     int* prefix = createIntArray(n);
