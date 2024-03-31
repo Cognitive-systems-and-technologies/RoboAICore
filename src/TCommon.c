@@ -47,6 +47,35 @@ float rngNormal() {
     return u * c;
 }
 
+//from:
+//https://www.geeksforgeeks.org/random-number-generator-in-arbitrary-probability-distribution-fashion/
+int find_ceil(int* arr, int r, int l, int h)
+{
+    int mid = 0;
+    while (l < h)
+    {
+        mid = l + ((h - l) >> 1);
+        (r > arr[mid]) ? (l = mid + 1) : (h = mid);
+    }
+    return (arr[l] >= r) ? l : -1;
+}
+
+int rng_by_prob(float* prob, int n)
+{
+    int* prefix = createIntArray(n);
+    if (prefix != NULL)
+    {
+        prefix[0] = (int)(prob[0] * 100.f);
+        for (int i = 1; i < n; ++i)
+            prefix[i] = prefix[i - 1] + (int)(prob[i] * 100.f);
+        int r = (rand() % prefix[n - 1]) + 1;
+        int indexc = find_ceil(prefix, r, 0, n - 1);
+        free(prefix);
+        return indexc;
+    }
+    return 0;
+}
+
 float Derivative(float (*f)(float), float x0)
 {
     const float delta = 1.0e-6; //small offset

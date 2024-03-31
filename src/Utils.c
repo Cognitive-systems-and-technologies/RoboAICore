@@ -14,6 +14,20 @@ float* createFloatArray(int n)
 	}
 }
 
+int* createIntArray(int n)
+{
+	int* a = (int*)malloc(sizeof(int) * n);
+	if (!a)
+	{
+		printf("Array allocation error\n");
+		return NULL;
+	}
+	else {
+		memset(a, 0, sizeof(int) * n);
+		return a;
+	}
+}
+
 void NormalizeArray(float *w, float n) 
 {
 	float stdev = StandardDeviation(w, n);

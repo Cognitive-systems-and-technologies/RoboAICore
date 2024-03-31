@@ -9,6 +9,7 @@ extern "C" {
 #include <stdio.h>
 
 float* createFloatArray(int n);
+int* createIntArray(int n);
 float StandardDeviation(float* data, int n);
 void FlipArray(float* w, int n);
 void NormalizeArray(float* w, float n);
