@@ -1,4 +1,155 @@
 # RoboAI Core Library
+A cross-platform deep learning library for mobile robots and PCs. The library can be used in areas where it is necessary to develop systems using neural networks, deep machine learning models, and reinforcement learning of intelligent agents.
+
+The main areas of applied use of the library:
+- educational robotics;
+- mobile robots, cars, manipulators, etc.,
+- smart home devices.
+
+To illustrate the operation of the deep learning algorithms presented in the library, the task of training a mobile robot on the Yahboom Raspbot transport platform with ultrasonic rangefinders installed on the robot to determine distances to objects of the HC-SR04 type is shown. The robot also has a debug board [32f429 discovery](https://www.st.com/en/evaluation-tools/32f429idiscovery.html) under which it operates.
+
+An example of training an agent based on stm32f429. Training is performed on the stm32f429 hardware using the DeepRl algorithm implemented in the library. Data on the training process is transmitted via the esp8266 module in the form of http messages to the server part for monitoring. Monitoring and control of the agent is performed using a specially developed web interface [NeuralInterface](https://github.com/Cognitive-systems-and-technologies/NeuralInterface)
+
+The robot self-training task is formulated as follows:
+The input vector (state vector S) takes values ​​from three HC-SR04 sensors and has the form: [d1, d2, d3], where d is the distance to obstacles. The output of the artificial neural network is the vector [a1, a2, a3], where a is the estimate of one of the three actions that the agent can perform. Actions a1-go straight, a2-turn left, a3-turn right. The reward function is as follows:
+```
+float GetReward(Eyes *eyes, int action, float max_length)
+{
+float proximity_reward = 0.0f;
+proximity_reward += eyes->distVec[0] / max_length;
+proximity_reward += eyes->distVec[1] / max_length;
+proximity_reward += eyes->distVec[2] / max_length;
+proximity_reward = proximity_reward / 3.f;
+float forwardReward = 0;
+if (action == 0 && proximity_reward > 0.8f) forwardReward = 0.5f;
+float res = proximity_reward + forwardReward;
+return res;
+}
+```
+If there are no obstacles and action a1 is performed, the agent receives the maximum reward, otherwise the agent receives a reward depending on the distance to the obstacles, the smaller it is, the smaller the reward. The agent also receives additional rewards when it goes beyond the obstacle-bound zone. All structures and learning algorithms are executed on STM32F429. Only monitoring data and agent control signals are transmitted to the local PC. To ensure communication between the agent and the server, an ESP8266 module was used, which implements an http client for sending requests to the global server and a local web server for processing incoming requests. The robot is considered trained when, after a certain number of iterations, the learning error value is less than 1.f and the agent can bypass obstacles, moving towards the exit from the obstacle-bound zone.
+
+Example of a trained agent:
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/ea0d8646-0c95-4f4a-b4c9-754df7526ee1
+
+Example of the agent training process:
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/12a71c56-2717-4aa6-8c5e-a0d0802e9ae2
+
+Example of program compilation for stm32f429:
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/9dda2685-c922-4ba5-9f9c-bd272eaf76bc
+
+As a test of reinforcement learning algorithms, an example of finding the shortest paths to a goal in a maze (qmaze algorithm) was chosen. Let's say we have a 10X10 cell maze, some of the cells are free, some of them are closed - these are the walls of the maze. An agent is placed in the maze, which needs to get to the target cell in the minimum number of steps. The agent receives a small penalty for each move on a free cell and a larger penalty for trying to move to a closed cell. The reason for such a negative penalty is that we want the agent to get to the target cell along the shortest path and not crash into the walls. For moving to the target cell, the agent receives the maximum reward. The agent can only move along free cells, the main goal of the agent is to get to the target cell.
+
+An example of the qmaze algorithm implemented using the RoboAICore library:
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/303822bc-dc65-43bc-8983-5437ec26f108
+
+After a certain number of training episodes, the agent learned to determine the shortest distance to the target cell from the overwhelming majority of starting positions.
+
+A convolutional neural network model for object recognition was tested for raspberry pi. As an example of recognition, the task of recognizing one agent by another when it enters the camera's field of view was chosen.
+
+For training, a small dataset was compiled for 2 classes: room and agent. The network input has a dimension of 227x227x3. In total, 40 images were used for training, 20 for each class.
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/adc06d2f-c17e-45cb-9943-d3c8b28b5788
+
+### Features:
+- Feedforward neural networks,
+- Convolutional neural networks,
+- Reinforcement learning algorithms (deep RL)
+
+### Optimization algorithms:
+- SGD - simple stochastic gradient descent,
+- Adagrad - adaptive gradient algorithm,
+- RMSProp - root mean square propagation,
+- Nesterov - Nesterov Accelerated Gradient,
+- Adam - adaptive momentum estimation,
+- Adan - Adaptive Nesterov Momentum Algorithm.
+
+## Assembly and compilation:
+The project was tested on: STM32f429, RaspberryPi 3 model B and a personal computer.
+
+Requirements for working on microcontrollers:
+- The library uses the float data type, so the microcontroller must support floating-point number calculations (FPU). For stm32, this is, for example, STM32F4xx, STM32F74x/5x, STM32L4xx, STM32F76x/7x, etc.
+- The amount of RAM required for operation depends on the size of the model being created and can vary from several tens of kilobytes to the size of the memory available on the device.
+- The size of programmable memory from 500 KB and above.
+- Compiler support and the presence of standard C libraries (libc).
+
+The project uses the CMake build system.
+To build and compile the project on a PC, you need to have the cmake program and compiler installed.
+
+To compile a library with support for GPU computing, you need to install the development tools for creating applications for the CUDA architecture - “NVIDIA GPU Computing Toolkit”. You can download the installation package from the nvidia website at the link:
+```
+https://developer.nvidia.com/cuda-downloads
+```
+GPUs with the compute_60 (Pascal) architecture version and higher are supported.
+
+Below is the process of assembling and compiling for the Windows operating system using cmake-gui + Visual Studio MSVC as an example:
+- copy the repository
+```bash
+$ git clone --recursive https://github.com/Cognitive-systems-and-technologies/RoboAICore.git
+```
+- open cmake and specify the paths to the project folder and the folder where the project will be built, then click "configure" and select the project type and compiler (for VS you can leave the default),
+- after completing the configuration, click "generate" and "open project". The project will open in VIsual Studio,
+- in the Visual Studio window, select the compilation type and in the menu "Build"->"Rebuild solution".
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/3f293dad-f79e-4311-9cd7-68e277f902dc
+
+Here is the build process on RaspberryPi for Debian Linux operating system:
+- copy the repository
+- open terminal and run commands to update and install cmake
+```
+sudo apt update
+sudo apt install -y cmake
+```
+- go to the source code folder and run the command line from the directory
+- run the following commands to build the project and compile:
+```
+cmake .
+make
+```
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/a33fce38-b1c1-4e9d-a61a-3d87e6776f97
+
+After compilation, executable files with examples of creating and training models will be created. Files with example code are located in the cmd folder:
+[examples](https://github.com/Cognitive-systems-and-technologies/RoboAICore/tree/main/src/cmd). List of examples:
+- cuda_test.cu - example of creating and training a model of three fully connected layers and hyperbolic tangent activation functions on the GPU,
+- rand_test.cpp - example of the algorithms for initializing weight coefficients,
+- opt_test.cpp - example of creating and training a model of three fully connected layers and hyperbolic tangent activation functions on the CPU,
+- mult_opt_test.cpp - example of creating and training a model with multiple outputs on the CPU,
+- model_test.cpp - example of creating a deep neural network model (like AlexNet) on the CPU,
+- data_test.cpp - example of working with data and layer functions.
+
+The following is the compilation process for [stm32f407](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) in the CooCox CoIDE environment:
+
+Configuring the environment and project:
+- Download and install a set of software packages required for compiling and generating executable code - Arm GNU Toolchain:
+```
+https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+```
+- In the CooCox CoIDE environment, execute the commands Project -> Select toolchain path
+- In the window that appears, specify the path to the bin folder of the installed Arm GNU Toolchain
+- Create a new project and select the type of board or chip
+- After completing the project setup, select the set of peripherals you want to work with, before standard C library component
+- In the Configuration project settings, enable FPU support and in the Link category, select Use base C library
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/ca13f750-7fe4-4272-8e4a-f365609648aa
+
+Example of project compilation and test on stm32f407:
+- Create a new group (Add Group) in the project and add library files to it
+- For comfortable work with data, you can increase the stack size from 512 bytes (default) to, for example, 32Kb. To do this, change the STACK_SIZE value to 0x00007D00 in the cmsis_boot/startup/startup_stm32f4xx.c project file (#define STACK_SIZE 0x00007D00)
+- Select Project -> Rebuild
+
+https://github.com/Cognitive-systems-and-technologies/RoboAICore/assets/100981393/00fb1472-2094-40c8-a01c-5f9e6629c42d
+
+## Resources:
+- Description of the [RoboAICore API](https://github.com/Cognitive-systems-and-technologies/materials/blob/main/RAI_API.pdf) library functions.
+
+
+---
+
+# RoboAI Core Library
 Кроссплатформенная библиотека глубокого обучения, для мобильных роботов и ПК. Библиотека может применяться в направлениях, где требуется разработка систем, использующих нейронные сети, модели глубокого машинного обучения, обучение с подкреплением интеллектуальных агентов. 
 
 Основные направления прикладного использования библиотеки:
