@@ -6,6 +6,7 @@ extern "C" {
 #endif 
 
 #include <stdlib.h>
+#include "Utils.h"
 # define M_PI 3.14159265358979323846f //pi 
 
 float DegToRad(float deg);
