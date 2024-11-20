@@ -1,6 +1,4 @@
 #include "TCommon.h"
-#include <stdlib.h>
-#include <math.h>
 
 float DegToRad(float deg) { return M_PI * deg / 180.0f; }
 float RadToDeg(float rad) { return rad * (180.0f / M_PI); }
