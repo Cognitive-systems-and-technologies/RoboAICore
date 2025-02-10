@@ -38,6 +38,7 @@ void Backward_Layer(Layer* l)
 	case LT_CONV: Conv2d_Backward(l); break;
 	case LT_MAXPOOL: MaxPool2d_Backward(l); break;
 	case LT_TANHA: TanhA_Backward(l); break;
+	case LT_CONC: Conc_Backward(l); break;
 	default:
 		break;
 	}
@@ -57,6 +58,7 @@ Tensor *Forward_Layer(Layer* l)
 	case LT_TANHA: y = TanhA_Forward(l); break;
 	case LT_CONV: y = Conv2d_Forward(l); break;
 	case LT_MAXPOOL: y = MaxPool2d_Forward(l); break;
+	case LT_CONC: y = Conc_Forward(l); break;
 	default: break;
 	}
 	return y;
@@ -163,6 +165,25 @@ void Model_Backward(Model* n)
 		Backward_Layer(l);
 	}
 }
+
+void Model_CLearGrads(Model* m)
+{
+	//clear parameters grads
+	dList props = Model_getGradients(m);
+	for (int i = 0; i < props.length; i++)
+	{
+		Tensor* target = (Tensor*)props.data[i].e;
+		memset(target->dw, 0, sizeof(float) * target->n);
+	}
+	//clear chain grads
+	for (int i = 0; i < m->n_layers; i++)
+	{
+		Tensor* out = &m->Layers[i]->output;
+		memset(out->dw, 0, sizeof(float) * out->n);
+	}
+	dList_free(&props);
+}
+
 //Функция возвращает динамический список из тензоров для обучения
 dList Model_getGradients(Model* n)
 {

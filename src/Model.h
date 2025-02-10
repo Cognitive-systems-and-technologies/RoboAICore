@@ -14,6 +14,7 @@ extern "C" {
 #include "MaxPool2d.h"
 #include "Relu.h"
 #include "Regression.h"
+#include "Conc.h"
 #include "cJSON.h"
 
 typedef struct _Model
@@ -38,6 +39,7 @@ cJSON* Layer_To_JSON(Layer* l);
 void Layer_Load_JSON(Layer* t, cJSON* node);
 cJSON* Model_To_JSON(Model *n);
 void Model_Load_JSON(Model *t, cJSON* node);
+void Model_CLearGrads(Model* m);
 dList Model_getGradients(Model* n);
 #ifdef __NVCC__
 Model Model_CreateGPU();

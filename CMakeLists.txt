@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17.0)
-project(RAI VERSION 0.1.1)
+project(RAI VERSION 0.1.2)
 
 include(CTest)
 enable_testing()
@@ -16,6 +16,7 @@ src/RL/SimpleDeque.c
 src/RL/RLBrain.c
 src/RL/RLAgent.c
 src/RL/ACBrain.c
+src/RL/DDPG.c
 )
 SET (RL_SOURCE_HEADERS 
 src/RL/ReplayBuffer.h
@@ -23,6 +24,7 @@ src/RL/SimpleDeque.h
 src/RL/RLBrain.h
 src/RL/RLAgent.h
 src/RL/ACBrain.h
+src/RL/DDPG.h
 )
 
 SET (GEO_SOURCE 
@@ -66,6 +68,7 @@ src/dList.c
 src/tList.c
 src/fList.c
 src/Softmax.c
+src/Conc.c
 
 src/message.c
 src/cJSON.c
@@ -109,6 +112,7 @@ src/dList.h
 src/tList.h
 src/fList.h
 src/Softmax.h
+src/Conc.h
 
 src/message.h
 #src/stb_image.h
@@ -216,6 +220,24 @@ if(RAI_BUILD_ENVS)
       ${GLAD_INCLUDE}
       ${BOX2D_INCLUDE}
     )
+
+    ###############################
+    #continuous cartpole example
+    add_executable(cartpole_cont src/cmd/cartpole_cont/cartpole.cpp 
+    src/cmd/cartpole_cont/shapes.h
+    src/cmd/cartpole_cont/cart.h
+    src/cmd/cartpole_cont/agent.h)
+
+    target_link_libraries(cartpole_cont PUBLIC RAICore glfw glad box2d)
+    target_include_directories (cartpole_cont PUBLIC
+      src
+      src/cmd/cartpole_cont
+      ${GLFW_DEPS}
+      ${GLFW_INCLUDE}
+      ${GLAD_INCLUDE}
+      ${BOX2D_INCLUDE}
+    )
+    ################################
 endif ()
 
 #set(CPACK_PROJECT_NAME ${PROJECT_NAME})

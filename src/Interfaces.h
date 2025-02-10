@@ -14,6 +14,7 @@ extern "C"
 typedef enum LayerType {
 	LT_INPUT,
 	LT_DENSE,
+	LT_CONC,
 	LT_RELU,
 	LT_SOFTMAX,
 	LT_REGRESSION,
@@ -38,6 +39,7 @@ typedef struct Layer
 	LayerType type;
 
 	Tensor* input;
+	Tensor* input2;
 	Tensor output;
 
 	void* aData;//additional layer data

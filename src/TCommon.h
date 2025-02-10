@@ -14,6 +14,8 @@ float RadToDeg(float rad);
 float Lerp(float a, float b, float t);
 float InvLerp(float a, float b, float t);
 
+float Clamp(float d, float min, float max);
+
 float rngFloat();
 int rngInt(int min, int max);
 float rngNormal();

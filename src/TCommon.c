@@ -5,6 +5,12 @@ float RadToDeg(float rad) { return rad * (180.0f / M_PI); }
 float Lerp(float a, float b, float t) { return a - (a * t) + (b * t); }
 float InvLerp(float a, float b, float t) { 	return (t - a) / (b - a); }
 
+float Clamp(float d, float min, float max)
+{
+    const float t = d < min ? min : d;
+    return t > max ? max : t;
+}
+
 void InsertionSort(float* values, int n) {
 	for (size_t i = 1; i < n; ++i) {
 		float x = values[i];
