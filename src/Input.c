@@ -25,6 +25,16 @@ Tensor *Input_Forward(Layer* l)
 	return &l->output;
 }
 
+void Input_Backward(Layer* l)
+{
+	Tensor* x = l->input;
+	//for (int i = 0; i < l->output.n; i++)
+	//{
+	//	x->dw[i] += l->output.dw[i];
+	//}
+	memcpy(x->dw, l->output.dw, sizeof(float) * l->output.n);
+}
+
 void Input_Free(Layer* l) 
 {
 	Tensor_Free(&l->output);

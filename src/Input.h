@@ -13,6 +13,7 @@ extern "C" {
 
 Layer *Input_Create(shape out_shape);
 Tensor *Input_Forward(Layer* l);
+void Input_Backward(Layer* l);
 
 void Input_Free(Layer *l);
 #ifdef __NVCC__

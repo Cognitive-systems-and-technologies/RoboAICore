@@ -30,6 +30,7 @@ void Backward_Layer(Layer* l)
 {
 	switch (l->type)
 	{
+	case LT_INPUT: Input_Backward(l); break;
 	case LT_DENSE: Dense_Backward(l); break;
 	//case LT_SOFTMAX: break;
 	case LT_RELU: Relu_Backward(l); break;
