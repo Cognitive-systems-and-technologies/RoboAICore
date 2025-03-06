@@ -20,7 +20,7 @@ void ReplayBuffer_Record(ReplayBuffer *rBuffer, Tensor* state,
 	float reward, int done)
 {
     Sample* s = createSample(state, next_state, action, reward, done);
-    dequeAppend(rBuffer->buffer, (DequeElem){ s }, freeSample);
+    dequeAppend(rBuffer->buffer, s, freeSample);
 }
 
 dList ReplayBuffer_Sample(ReplayBuffer* rb)
