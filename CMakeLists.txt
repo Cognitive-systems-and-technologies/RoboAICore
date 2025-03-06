@@ -17,6 +17,7 @@ src/RL/RLBrain.c
 src/RL/RLAgent.c
 src/RL/ACBrain.c
 src/RL/DDPG.c
+src/RL/TD3.c
 )
 SET (RL_SOURCE_HEADERS 
 src/RL/ReplayBuffer.h
@@ -25,6 +26,7 @@ src/RL/RLBrain.h
 src/RL/RLAgent.h
 src/RL/ACBrain.h
 src/RL/DDPG.h
+src/RL/TD3.h
 )
 
 SET (GEO_SOURCE 
@@ -232,6 +234,23 @@ if(RAI_BUILD_ENVS)
     target_include_directories (cartpole_cont PUBLIC
       src
       src/cmd/cartpole_cont
+      ${GLFW_DEPS}
+      ${GLFW_INCLUDE}
+      ${GLAD_INCLUDE}
+      ${BOX2D_INCLUDE}
+    )
+    ################################
+    ###############################
+    #cartpole example
+    add_executable(cartpole_td3 src/cmd/cartpole_td3/cartpole.cpp 
+    src/cmd/cartpole_cont/shapes.h
+    src/cmd/cartpole_cont/cart.h
+    src/cmd/cartpole_td3/agent.h)
+
+    target_link_libraries(cartpole_td3 PUBLIC RAICore glfw glad box2d)
+    target_include_directories (cartpole_td3 PUBLIC
+      src
+      src/cmd/cartpole_td3
       ${GLFW_DEPS}
       ${GLFW_INCLUDE}
       ${GLAD_INCLUDE}
