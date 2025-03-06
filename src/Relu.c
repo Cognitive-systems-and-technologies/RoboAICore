@@ -1,7 +1,7 @@
 #include "Relu.h"
 #include <stdlib.h>
 
-Layer* Relu_Create(Layer *in)
+Layer* Relu_Create(Layer* in)
 {
 	Layer* dl = (Layer*)malloc(sizeof(Layer));
 	if (!dl)
@@ -19,12 +19,12 @@ Layer* Relu_Create(Layer *in)
 	return dl;
 }
 
-Tensor *Relu_Forward(Layer* l)
+Tensor* Relu_Forward(Layer* l)
 {
 	Tensor* x = l->input;
 	for (int i = 0; i < x->n; i++)
 	{
-		if (x->w[i] < 0) l->output.w[i] = 0.0001f * x->w[i];
+		if (x->w[i] < 0) l->output.w[i] = 0.0;
 		else
 			l->output.w[i] = x->w[i];
 	}
@@ -36,7 +36,7 @@ void Relu_Backward(Layer* l)
 	Tensor* x = l->input;
 	for (int i = 0; i < x->n; i++)
 	{
-		if (l->output.w[i] < 0) x->dw[i] += 0.0001f * l->output.dw[i]; // threshold
+		if (x->w[i] < 0) x->dw[i] += 0.0; // threshold
 		else x->dw[i] += l->output.dw[i];
 	}
 }
