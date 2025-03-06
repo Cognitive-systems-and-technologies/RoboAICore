@@ -22,6 +22,13 @@ float rngNormal();
 int find_ceil(int* arr, int r, int l, int h);
 int rng_by_prob(float* prob, int n);
 
+typedef struct OrnsteinUhlenbeckNoise {
+	float theta, mu, sigma, dt, x0;
+	float x_prev;
+}OrnsteinUhlenbeckNoise;
+OrnsteinUhlenbeckNoise initNoise(float mu, float sigma, float x0);
+float getNoiseVal(OrnsteinUhlenbeckNoise* n);
+
 void InsertionSort(float* values, int n);
 float Mean(float* items, int n);
 float Derivative(float (*f)(float), float x0);
