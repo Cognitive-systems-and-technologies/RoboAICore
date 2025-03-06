@@ -11,47 +11,77 @@
 #include "RL/DDPG.h"
 
 #include "cart.h"
+#include "RL/SimpleDeque.h"
 
-struct Samples 
+struct Samples
 {
+    Samples(shape s)
+    {
+        states = tList_create();
+        probs = tList_create();
+        actions = fList_create();
+        rewards = fList_create();
+        last_state = Tensor_Create(s, 0);
+    }
+
+    void AddSample(Tensor* state, Tensor* prob, float action, float reward)
+    {
+        tList_push(&states, state);
+        tList_push(&probs, prob);
+        fList_push(&actions, action);
+        fList_push(&rewards, reward);
+    }
+
     tList states;
     tList probs;
     fList rewards;
     fList actions;
+    Tensor last_state;
 };
+
+void freeSample(void* s)
+{
+    Samples* sa = (Samples*)s;
+    tList_free(&sa->states);
+    tList_free(&sa->probs);
+    fList_free(&sa->actions);
+    fList_free(&sa->rewards);
+    Tensor_Free(&sa->last_state);
+}
 
 class Agent {
 public:
     enum Phase { TRAIN, TEST };
 
     Cart* cart;
-    float epsilon = 0.8f;
+    float epsilon = 0.9f;
     int n_actions = 1;
     Tensor state;
     Phase phase = Phase::TEST;
-    DDPG *brain;
-    Samples sa;
+    DDPG* brain;
+    Samples* sa;
     shape input_shape = { 1, 1, 4 };
 
     float timeStep = 1.0f / 60.0f;
     int32 velocityIterations = 6;
     int32 positionIterations = 2;
 
+    //replay buffer:
+    SimpleDeque* history = createDeque(20000);
+    int batch_size = 64;
+
     Agent(Cart* c)
     {
         cart = c;
-        state = Tensor_Create(input_shape, 0);
-        
-        sa.states = tList_create();
-        sa.probs = tList_create();
-        sa.actions = fList_create();
-        sa.rewards = fList_create();
-
+        state = MoveByForce(0.f); //Tensor_Create(input_shape, 0);
+        sa = new Samples(input_shape);
         brain = DDPG_Create(input_shape, n_actions);
     }
 
-    ~Agent() 
+    ~Agent()
     {
+        printf("Clean up actor's data...\n");
+        freeDeque(history, freeSample);
     }
 
     float Policy(Tensor* s)
@@ -84,51 +114,46 @@ public:
             Tensor a = Act(&state);
 
             float force = a.w[0];
-            
+
             Tensor next_state = MoveByForce(force);
             float reward = GetReward();
             trace_reward += reward;
 
-            tList_push(&sa.states, &state);
-            tList_push(&sa.probs, &a);
-            fList_push(&sa.actions, (float)force);
-            fList_push(&sa.rewards, (float)reward);
+            sa->AddSample(&state, &a, force, reward);
 
             Tensor_Copy(&state, &next_state);
             Tensor_Free(&next_state);
             Tensor_Free(&a);
-            if (cart->needToReset()||sa.states.length>4000)
+            if (cart->needToReset() || sa->states.length > 5000)
             {
+                if (sa->states.length < 5000)
+                    sa->rewards.data[sa->rewards.length - 1] = -1;
                 printf("\ntrace reward: %f eps: %f\n", trace_reward, epsilon);
-                if (trace_reward > 500)
-                    sa.rewards.data[sa.rewards.length - 1] = 10.f;
-                else
-                    sa.rewards.data[sa.rewards.length - 1] = -10.f;
-                DDPG_TrainTrace(brain, sa.states.data, sa.probs.data, sa.rewards.data, sa.states.length, counter);
-                counter++;
+                if (history->length > batch_size) {
+                    for (size_t i = 0; i < batch_size; i++)
+                    {
+                        int k = rngInt(0, history->length - 1);
+                        Samples* s = (Samples*)history->data[k].elem;
+                        DDPG_TrainTrace(brain, s->states.data, &s->last_state, s->probs.data, s->rewards.data, s->states.length, counter);
+                        counter++;
+                    }
+                }
+                Tensor_CopyData(&sa->last_state, &state);
+                dequeAppend(history, sa, freeSample);
+                sa = new Samples(input_shape);
 
-                tList_free(&sa.states);
-                tList_free(&sa.probs);
-                fList_free(&sa.actions);
-                fList_free(&sa.rewards);
-
-                sa.states = tList_create();
-                sa.probs = tList_create();
-                sa.actions = fList_create();
-                sa.rewards = fList_create();
-                
-                if (trace_reward > 2000)
+                if (trace_reward > 5000)
                 {
                     printf("Maximum score reached, set TEST phase\n");
                     glfwSwapInterval(1.0);
                     phase = TEST;
                 }
-                
+
                 trace_reward = 0;
                 cart->Reset();
             }
         }
-        else 
+        else
         {
             float force = Policy(&state);
             Tensor next_state = MoveByForce(force);
@@ -136,10 +161,10 @@ public:
             state = next_state;
         }
     }
-    
+
     Tensor MoveByForce(float force)
     {
-        cart->ApplyForceValue(force*0.1f);
+        cart->ApplyForceValue(force * 0.1f);
         cart->world->Step(timeStep, velocityIterations, positionIterations);
         Tensor s = Tensor_Create(input_shape, 0);
         s.w[0] = cart->cartPos();
