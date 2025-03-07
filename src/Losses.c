@@ -3,15 +3,15 @@
 float MSE_Loss(Tensor* y, Tensor* y_true) 
 {
 	float sum = 0;
+	float scale = 1.f / (float)y->n;
 	for (int i = 0; i < y->n; i++)
 	{
-		float dy = (2.f / (float)y->n) * (y->w[i] - y_true->w[i]);
-		y->dw[i] += dy;
-
 		float t = y_true->w[i] - y->w[i];
+		float dy = -2.f * scale * t;
+		y->dw[i] += dy;
 		sum += t * t;
 	}
-	float loss = sum / (float)y->n;
+	float loss = sum * scale;
 	return loss;
 }
 

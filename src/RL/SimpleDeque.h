@@ -23,7 +23,7 @@ extern "C" {
 
 	SimpleDeque* createDeque(int capacity);
 
-	void dequeAppend(SimpleDeque* d, DequeElem t, void (*elementFree) (void* e));
+	void dequeAppend(SimpleDeque* d, void* t, void (*elementFree) (void* e));
 
 	void freeDeque(SimpleDeque* d, void (*elementFree) (void* e));
 

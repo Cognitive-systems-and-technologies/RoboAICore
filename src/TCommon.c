@@ -51,6 +51,27 @@ float rngNormal() {
     return u * c;
 }
 
+OrnsteinUhlenbeckNoise initNoise(float mu, float sigma, float x0)
+{
+    OrnsteinUhlenbeckNoise noise;
+    noise.mu = mu;
+    noise.sigma = sigma;
+    noise.theta = 0.15f;
+    noise.dt = 1e-2f;
+    noise.x0 = x0;
+    noise.x_prev = noise.x0;
+    return noise;
+}
+
+//Ornstein-Uhlenbeck noise implemented by OpenAI
+//from https://github.com/openai/baselines/blob/master/baselines/ddpg/noise.py
+float getNoiseVal(OrnsteinUhlenbeckNoise* n)
+{
+    float x = n->x_prev + n->theta * (n->mu - n->x_prev) * n->dt + n->sigma * sqrtf(n->dt) * rngNormal();
+    n->x_prev = x;
+    return x;
+}
+
 //from:
 //https://www.geeksforgeeks.org/random-number-generator-in-arbitrary-probability-distribution-fashion/
 int find_ceil(int* arr, int r, int l, int h)
